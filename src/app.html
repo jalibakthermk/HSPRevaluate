@@ -1,0 +1,469 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>HSPR Headlamp Rater</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Saira+Semi+Condensed:wght@500;600;700&display=swap">
+<style>
+/* Layout: lab worksheet — inputs as two beam cards, then a score strip, criterion tables and two "measuring screen" plots per beam */
+:root{
+  --bg:#eef1f4; --surface:#ffffff; --sunk:#e3e8ee; --ink:#18202b; --muted:#5a6676; --line:#cfd6df;
+  --accent:#b86a00; --accent-ink:#ffffff; --accent-soft:#fbe9cf;
+  --good:#1f7a4d; --warn:#a15c00; --bad:#b3261e;
+  --screen:#0e131a; --screen-ink:#c9d3df; --screen-line:#3a4656;
+  --f-display:"Saira Semi Condensed","Arial Narrow",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#11161d; --surface:#18202a; --sunk:#0d1218; --ink:#e3e9f0; --muted:#94a1b2; --line:#2b3644;
+  --accent:#f0a32e; --accent-ink:#1a1206; --accent-soft:#3a2a12;
+  --good:#5cc48d; --warn:#f0a32e; --bad:#ff7a6e;
+  --screen:#0a0e13; --screen-ink:#c9d3df; --screen-line:#334050; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#11161d; --surface:#18202a; --sunk:#0d1218; --ink:#e3e9f0; --muted:#94a1b2; --line:#2b3644;
+  --accent:#f0a32e; --accent-ink:#1a1206; --accent-soft:#3a2a12;
+  --good:#5cc48d; --warn:#f0a32e; --bad:#ff7a6e;
+  --screen:#0a0e13; --screen-ink:#c9d3df; --screen-line:#334050; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5}
+.wrap{max-width:1180px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:22px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.1}
+h1{font-size:clamp(28px,5vw,40px);font-weight:700;letter-spacing:.01em}
+h2{font-size:22px;font-weight:600}
+h3{font-size:17px;font-weight:600}
+.eyebrow{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.lede{color:var(--muted);max-width:68ch;margin:6px 0 0}
+header{display:grid;gap:4px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,460px),1fr));gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;gap:14px;min-width:0}
+.card-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.tag{font-family:var(--f-mono);font-size:12px;padding:2px 8px;border-radius:999px;background:var(--sunk);color:var(--muted)}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+label.f{display:grid;gap:4px;font-size:13px;color:var(--muted)}
+input[type=number],select{font:500 15px var(--f-mono);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:7px 9px;width:100%}
+input:focus-visible,select:focus-visible,button:focus-visible,summary:focus-visible,.drop:focus-within{outline:2px solid var(--accent);outline-offset:2px}
+.files{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}
+.drop{position:relative;border:1.5px dashed var(--line);border-radius:8px;padding:10px 12px;background:var(--bg);display:grid;gap:2px;cursor:pointer;min-width:0}
+.drop.has{border-style:solid;border-color:var(--accent)}
+.drop.over{background:var(--accent-soft)}
+.drop input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
+.drop b{font-size:13px;font-weight:600}
+.drop span{font-family:var(--f-mono);font-size:12px;color:var(--muted);overflow-wrap:anywhere}
+.checks{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:13.5px}
+.checks label{display:flex;gap:7px;align-items:center}
+.checks input{accent-color:var(--accent);width:16px;height:16px}
+.bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+button{font:600 15px var(--f-body);border-radius:8px;padding:10px 18px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+button:disabled{opacity:.55;cursor:progress}
+.status{font-size:13.5px;color:var(--muted)}
+.status.err{color:var(--bad)}
+.banner{border:1px solid var(--accent);background:var(--accent-soft);border-radius:8px;padding:9px 12px;font-size:13.5px}
+/* score strip */
+.strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:12px}
+.score{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:grid;gap:6px;align-content:start}
+.score.sys{border-color:var(--accent)}
+.score .num{font:600 38px/1 var(--f-display);font-variant-numeric:tabular-nums}
+.score .num small{font-size:16px;color:var(--muted);font-weight:500}
+.rank{justify-self:start;font:600 12.5px var(--f-mono);letter-spacing:.04em;padding:3px 9px;border-radius:999px;background:var(--accent-soft);color:var(--ink);border:1px solid var(--accent)}
+.ladder{display:grid;grid-template-columns:repeat(6,1fr);gap:3px;margin-top:2px}
+.ladder i{height:6px;border-radius:2px;background:var(--sunk)}
+.ladder i.on{background:var(--accent)}
+.score .sub{font-size:12.5px;color:var(--muted);font-family:var(--f-mono)}
+/* tables */
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:620px}
+th,td{padding:7px 10px;text-align:right;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums;white-space:nowrap}
+th{font:500 11.5px var(--f-mono);letter-spacing:.05em;text-transform:uppercase;color:var(--muted);background:var(--sunk)}
+td:first-child,th:first-child{text-align:left;white-space:normal;min-width:180px}
+td .d{display:block;font-size:12px;color:var(--muted)}
+td.v{font-family:var(--f-mono);font-weight:500}
+tr.tot td{font-weight:600;border-bottom:0;background:var(--sunk)}
+.pbar{position:relative;width:110px;height:14px;display:inline-block;vertical-align:middle;margin-left:8px}
+.pbar::before{content:"";position:absolute;left:0;right:0;top:6px;height:2px;background:var(--sunk)}
+.pbar .t{position:absolute;top:2px;width:1px;height:10px;background:var(--line)}
+.pbar .dot{position:absolute;top:2px;width:10px;height:10px;border-radius:50%;margin-left:-5px;background:var(--accent)}
+.pbar .dot.lo{background:var(--bad)}
+details{font-size:13px}
+details summary{cursor:pointer;color:var(--muted)}
+.detail{font-family:var(--f-mono);font-size:12px;color:var(--muted);white-space:normal}
+/* plots */
+.plots{display:grid;align-items:start;grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr));gap:14px}
+figure{margin:0;display:grid;gap:6px;min-width:0}
+figcaption{font-size:12.5px;color:var(--muted)}
+canvas{width:100%;display:block;border-radius:8px;background:var(--screen)}
+.legend{display:flex;flex-wrap:wrap;gap:4px 10px;font:12px var(--f-mono);color:var(--muted)}
+.legend i{display:inline-block;width:12px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+.pill{display:inline-block;font:500 12px var(--f-mono);padding:2px 8px;border-radius:999px;border:1px solid currentColor}
+.pill.ok{color:var(--good)} .pill.warn{color:var(--warn)}
+.checksline{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:13px;color:var(--muted)}
+.notes{display:grid;gap:10px}
+.notes ol{margin:0;padding-left:20px;display:grid;gap:7px;max-width:90ch}
+.notes li{font-size:14px}
+.notes code{font-family:var(--f-mono);font-size:12.5px;background:var(--sunk);padding:1px 5px;border-radius:4px}
+.muted{color:var(--muted)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">GTB Recommended Practice SEP2023 · CIE S 021/E:2011</div>
+    <h1>HSPR Headlamp Rater</h1>
+    <p class="lede">Headlight Safety Performance Rating for the passing beam and driving beam, calculated from your IES files and the lamp installation. The algorithms are ported from the TU Darmstadt reference software and give identical criterion values.</p>
+  </header>
+
+  <div id="sampleBanner" class="banner">Showing <b>synthetic sample beams</b> (an LED-style passing beam and a driving beam) so you can see the output. Load your own IES files below and press Calculate.</div>
+
+  <section class="grid2">
+    <div class="card" id="cardLB">
+      <div class="card-head"><h2>Passing beam</h2><span class="tag">low beam · 9 criteria</span></div>
+      <div class="files">
+        <div class="drop" id="dropLB_L"><b>Left lamp IES</b><span>Required · sample loaded</span><input type="file" id="fLB_L" accept=".ies,.IES,.txt"></div>
+        <div class="drop" id="dropLB_R"><b>Right lamp IES</b><span>Optional · uses left file</span><input type="file" id="fLB_R" accept=".ies,.IES,.txt"></div>
+      </div>
+      <div class="fields">
+        <label class="f">Mounting height (m)<input type="number" id="hLB" value="0.65" step="0.01" min="0.2" max="2"></label>
+        <label class="f">Lamp separation (m)<input type="number" id="wLB" value="1.40" step="0.01" min="0.2" max="3"></label>
+        <label class="f">Vertical aim shift (°)<input type="number" id="aLB" value="0" step="0.01" min="-5" max="5"></label>
+      </div>
+      <div class="checks"><label><input type="checkbox" id="mLB"> Mirror H (LHT beam or reversed H axis)</label></div>
+      <div class="checksline" id="chkLB"></div>
+    </div>
+
+    <div class="card" id="cardHB">
+      <div class="card-head"><h2>Driving beam</h2><span class="tag">high beam · 8 criteria</span></div>
+      <div class="files">
+        <div class="drop" id="dropHB_L"><b>Left lamp IES</b><span>Required · sample loaded</span><input type="file" id="fHB_L" accept=".ies,.IES,.txt"></div>
+        <div class="drop" id="dropHB_R"><b>Right lamp IES</b><span>Optional · uses left file</span><input type="file" id="fHB_R" accept=".ies,.IES,.txt"></div>
+      </div>
+      <div class="fields">
+        <label class="f">Mounting height (m)<input type="number" id="hHB" value="0.65" step="0.01" min="0.2" max="2"></label>
+        <label class="f">Lamp separation (m)<input type="number" id="wHB" value="1.40" step="0.01" min="0.2" max="3"></label>
+        <label class="f">Vertical aim shift (°)<input type="number" id="aHB" value="0" step="0.01" min="-5" max="5"></label>
+      </div>
+      <div class="checks">
+        <label><input type="checkbox" id="mHB"> Mirror H</label>
+        <label><input type="checkbox" id="addLB"> Passing beam stays on (add LB)</label>
+      </div>
+      <div class="checksline" id="chkHB"></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h3>System rating</h3><span class="tag">GTB §8 · MEP → score</span></div>
+    <div class="fields">
+      <label class="f">Driving-beam operation
+        <select id="mode"><option value="manual">Manually operated</option><option value="automatic" selected>Automatic (camera on/off)</option><option value="adb">Adaptive driving beam</option></select></label>
+      <label class="f">ADB score, if known (1–5)<input type="number" id="adbScore" placeholder="e.g. 3.06" step="0.01" min="0" max="7"></label>
+    </div>
+    <div class="bar">
+      <button class="primary" id="run">Calculate rating</button>
+      <button id="copy">Copy results</button>
+      <span class="status" id="status" role="status"></span>
+    </div>
+  </section>
+
+  <section class="strip" id="strip"></section>
+
+  <section class="card" id="resLB"></section>
+  <section class="card" id="resHB"></section>
+
+  <section class="card notes">
+    <h3>Method notes</h3>
+    <ol>
+      <li><b>Geometry.</b> Origin on the road at the vehicle centre, x positive to the right, z along the road. Left lamp at −separation/2, right lamp at +separation/2, both at the mounting height. Right-hand traffic; tick Mirror H for a left-hand-traffic beam.</li>
+      <li><b>Illuminance</b> is vertical illuminance on a plane facing the vehicle, <code>E = I·cos/d²</code> with cos = z/d, summed over both lamps. Intensity is looked up on a 0.05° grid spanning 45°L–45°R and 15°D–15°U, exactly as the reference software resamples the IES data.</li>
+      <li><b>Passing beam.</b> Zones A and B: farthest distance where 1, 3 and 5 lx are exceeded on the road surface along lines 0, 1.5 and 3 m right (B rotated 5° to the right), searched inward from 400 m in 0.5 m steps; 9 values averaged. Zone C: same at 250 mm height, lines 3, 4.5 and 6 m left. Zone D: lateral reach of 3 lx on the road at 30, 40 and 50 m. Zone E: lateral reach of 3 lx at 250 mm height at 10 and 20 m. Flux: 45°L–45°R, 15°D–5°U. Glare: luminous flux from each lamp into a 9.2 × 0.69 m window at 50 m (x −7.9 to +1.3 m, height 0.93–1.62 m) with the 5 × 8 eye-position weights, summed.</li>
+      <li><b>Driving beam.</b> Points A–E: farthest distance along a ray from the road origin towards (x, y, 100 m) where 3 lx is exceeded, searched from 800 m: A (0, h), B (−20, h), C (0, h+9), D (+20, h), E (0, h−2), with h the mounting height. Zone E and flux as for the passing beam, flux window 5°D–10°U.</li>
+      <li><b>Scoring.</b> Criterion points <code>P = (V − V₁)/(V₂ − V₁) + 1</code> with V₁ = mean − SD and V₂ = mean + SD of the CIE database (reversed for glare); weighted sum normalised between the 1-point and 5-point benchmarks. EP<sub>LB</sub> = 5.80·N + 64.17 m, EP<sub>HB</sub> = 11.71·N + 141.27 m, EP<sub>ADB</sub> = 10.87·N + 94.13 m; system score = 0.626·MEP − 36.42.</li>
+      <li><b>IES handling.</b> Type A and B files are used as H/V grids, as the reference does. Type C files are converted, with the polar axis detected from where the peak lies. Candela multiplier and ballast factor are applied (the reference reader ignores them, so results differ from the .exe only when those are not 1). The aim shift moves the beam vertically before evaluation; the HSPR expects the cut-off at the manufacturer's declared aim.</li>
+      <li><b>Zone E saturation.</b> At 10 m, 45° from a lamp is only 10 m sideways, so Zone E cannot report much more than 10 m + half the separation. This is why the GTB example shows 10.75 m on both sides for both beams. Light outside ±45° does not count.</li>
+    </ol>
+  </section>
+</div>
+
+<script>
+/*CORE*/
+</script>
+<script>
+(function(){
+"use strict";
+const H = window.HSPR, G = H.GRID, $ = id => document.getElementById(id);
+const fmt = (v, d = 1) => (v == null || !isFinite(v)) ? "–" : v.toFixed(d);
+const state = { LB_L: null, LB_R: null, HB_L: null, HB_R: null, names: {}, results: null, sample: true };
+
+// ---------- synthetic sample beams (built directly on the HSPR grid) ----------
+function sample(kind){
+  const data = new Float32Array(G.NH * G.NV), t15 = Math.tan(15 * Math.PI / 180);
+  let max = 0;
+  for (let j = 0; j < G.NV; j++){ const V = G.V0 + j * G.STEP;
+    for (let i = 0; i < G.NH; i++){ const Hh = G.H0 + i * G.STEP; let I;
+      if (kind === "LB"){
+        const cut = Hh < 0 ? -0.57 : Math.min(-0.57 + t15 * Hh, 1.5);
+        const soft = 1 / (1 + Math.exp((V - cut) / 0.08));
+        const sq = x => x * x;
+        const spread = 4000 * Math.exp(-sq(Hh / 28)) * Math.exp(-sq((V + 4) / 4));
+        const hot = 32000 * Math.exp(-sq((Hh - 2) / 6) - sq((V + 1.6) / 1.1));
+        I = (hot + spread + 9000 * Math.exp(-sq((Hh - 1) / 14) - sq((V + 1.2) / 1.8))) * soft + 150 * Math.exp(-sq(Hh / 20));
+        if (V < -12) I *= 0.3;
+      } else {
+        const sq = x => x * x;
+        I = 55000 * Math.exp(-sq(Hh / 4.5) - sq((V - 0.2) / 2.2)) + 9000 * Math.exp(-sq(Hh / 16) - sq(V / 5));
+      }
+      data[j * G.NH + i] = I; if (I > max) max = I;
+    }}
+  return { data, max, note: "synthetic sample" };
+}
+
+// ---------- file inputs ----------
+const texts = {};
+function wireDrop(key){
+  const box = $("drop" + key), inp = $("f" + key), span = box.querySelector("span");
+  inp.addEventListener("change", () => { if (inp.files[0]) load(inp.files[0]); });
+  ["dragenter","dragover"].forEach(e => box.addEventListener(e, ev => { ev.preventDefault(); box.classList.add("over"); }));
+  ["dragleave","drop"].forEach(e => box.addEventListener(e, () => box.classList.remove("over")));
+  box.addEventListener("drop", ev => { ev.preventDefault(); const f = ev.dataTransfer.files[0]; if (f) load(f); });
+  function load(file){
+    const rd = new FileReader();
+    rd.onload = () => {
+      try {
+        const ies = H.parseIES(rd.result);
+        texts[key] = ies; state.names[key] = file.name;
+        span.textContent = `${file.name} · Type ${ies.typeName} · ${ies.V.length}×${ies.H.length}`;
+        box.classList.add("has");
+        if (key.endsWith("_L")){ state.sample = false; ["LB_L","HB_L"].forEach(k => { if (!texts[k]) $("drop" + k).querySelector("span").textContent = "Required · no file loaded"; }); }
+        setStatus(`Loaded ${file.name}. Press Calculate rating.`);
+      } catch (e) { setStatus(`${file.name}: ${e.message}`, true); }
+    };
+    rd.readAsText(file);
+  }
+}
+["LB_L","LB_R","HB_L","HB_R"].forEach(wireDrop);
+function setStatus(msg, err){ const s = $("status"); s.textContent = msg; s.classList.toggle("err", !!err); }
+
+// ---------- diagnostics ----------
+function cutoffAt(g, h){ // steepest intensity drop in V between -3 and +2 at given H
+  let best = 0, at = null;
+  for (let v = -3; v < 2; v += G.STEP){
+    const a = H.Inear(g, h, v), b = H.Inear(g, h, v + G.STEP);
+    const s = a - b; if (s > best){ best = s; at = v + G.STEP / 2; }
+  }
+  return at;
+}
+function peak(g){ let m = 0, k = 0; for (let i = 0; i < g.data.length; i++) if (g.data[i] > m){ m = g.data[i]; k = i; }
+  return { I: m, h: G.H0 + (k % G.NH) * G.STEP, v: G.V0 + Math.floor(k / G.NH) * G.STEP }; }
+
+// ---------- run ----------
+function num(id, d){ const v = parseFloat($(id).value); return isFinite(v) ? v : d; }
+function grid(key, kind, mirror, aim){
+  const ies = texts[key];
+  if (ies) return H.toGrid(ies, { mirror, aim });
+  if (key.endsWith("_R")) return null;
+  if (!state.sample) return null;
+  const s = sample(kind);
+  if (!mirror && !aim) return s;
+  // apply mirror/aim to the sample through a fake rect IES
+  return shiftGrid(s, mirror, aim);
+}
+function shiftGrid(g, mirror, aim){
+  const d = new Float32Array(g.data.length);
+  for (let j = 0; j < G.NV; j++){ const v = G.V0 + j * G.STEP - aim;
+    for (let i = 0; i < G.NH; i++){ const h = G.H0 + i * G.STEP;
+      const jj = Math.round((v - G.V0) / G.STEP); if (jj < 0 || jj >= G.NV) continue;
+      const ii = mirror ? G.NH - 1 - i : i; d[j * G.NH + i] = g.data[jj * G.NH + ii]; } }
+  return { data: d };
+}
+
+function run(){
+  $("run").disabled = true; setStatus("Calculating…");
+  setTimeout(() => {
+    try {
+      const lbL = grid("LB_L", "LB", $("mLB").checked, num("aLB", 0));
+      const hbL = grid("HB_L", "HB", $("mHB").checked, num("aHB", 0));
+      if (!lbL && !hbL) throw new Error("Load at least a left-lamp IES file for one beam.");
+      const lbR = lbL ? grid("LB_R", "LB", $("mLB").checked, num("aLB", 0)) : null;
+      let hbR = hbL ? grid("HB_R", "HB", $("mHB").checked, num("aHB", 0)) : null;
+      const out = { lb: null, hb: null };
+      const hLB = num("hLB", 0.75), wLB = num("wLB", 1.5), hHB = num("hHB", 0.75), wHB = num("wHB", 1.5);
+      if (lbL){ out.lb = H.assessLB(lbL, lbR, hLB, wLB); out.lbLamps = H.lampsFrom(lbL, lbR, hLB, wLB); out.lbG = lbL; }
+      if (hbL){
+        let gl = hbL, gr = hbR || hbL;
+        if ($("addLB").checked && lbL){ gl = H.addGrids(gl, lbL); gr = H.addGrids(gr, lbR || lbL); }
+        out.hb = H.assessHB(gl, gr, hHB, wHB); out.hbLamps = H.lampsFrom(gl, gr, hHB, wHB); out.hbG = hbL;
+      }
+      state.results = out;
+      $("sampleBanner").hidden = !state.sample || !!(texts.LB_L || texts.HB_L);
+      render(out);
+      setStatus(`Done${state.sample && !(texts.LB_L||texts.HB_L) ? " (sample beams)" : ""}.`);
+    } catch (e) { setStatus(e.message, true); }
+    $("run").disabled = false;
+  }, 30);
+}
+$("run").addEventListener("click", run);
+["mode","adbScore"].forEach(id => $(id).addEventListener("input", () => state.results && renderStrip(state.results)));
+
+// ---------- rendering ----------
+function ladder(idx){ return `<div class="ladder" aria-hidden="true">${[0,1,2,3,4,5].map(i => `<i class="${i <= idx ? "on" : ""}"></i>`).join("")}</div>`; }
+function renderStrip(out){
+  const cards = [];
+  const beam = (t, r) => `<div class="score"><div class="eyebrow">${t}</div><div class="num">${fmt(r.score, 2)} <small>/ 5</small></div><span class="rank">${r.rank}</span>${ladder(H.RANKS.indexOf(r.rank))}<div class="sub">weighted sum ${fmt(r.sum, 2)}</div></div>`;
+  if (out.lb) cards.push(beam("Passing beam", out.lb));
+  if (out.hb) cards.push(beam("Driving beam", out.hb));
+  if (out.lb && out.hb){
+    const adb = parseFloat($("adbScore").value), mode = $("mode").value;
+    const sys = H.system({ lb: out.lb.score, hb: out.hb.score, adb: isFinite(adb) ? adb : null });
+    const m = sys.modes[mode];
+    if (m){
+      const label = { manual: "manual", automatic: "automatic", adb: "ADB" }[mode];
+      const others = Object.keys(sys.modes).filter(k => k !== mode).map(k => `${k} ${fmt(sys.modes[k].score, 1)}`).join(" · ");
+      cards.push(`<div class="score sys"><div class="eyebrow">System score · ${label}</div><div class="num">${fmt(m.score, 1)} <small>pts</small></div><span class="rank">${m.rank}</span>${ladder(H.RANKS.indexOf(m.rank))}<div class="sub">MEP ${fmt(m.MEP, 1)} m · EP LB ${fmt(sys.EP.LB, 1)} m · EP HB ${fmt(sys.EP.HB, 1)} m${sys.EP.ADB ? ` · EP ADB ${fmt(sys.EP.ADB, 1)} m` : ""}</div>${others ? `<div class="sub">other modes: ${others}</div>` : ""}</div>`);
+    } else {
+      cards.push(`<div class="score sys"><div class="eyebrow">System score · ADB</div><div class="sub">Enter the ADB score to get the adaptive-mode system score. ADB needs the six traffic-scenario light distributions, which this tool does not rate.</div></div>`);
+    }
+  } else cards.push(`<div class="score sys"><div class="eyebrow">System score</div><div class="sub">Needs both beams.</div></div>`);
+  $("strip").innerHTML = cards.join("");
+}
+function pbar(P){
+  const x = p => Math.max(0, Math.min(100, p / 3 * 100));
+  return `<span class="pbar" title="0 to 3 points; ticks at 1 and 2"><span class="t" style="left:${x(1)}%"></span><span class="t" style="left:${x(2)}%"></span><span class="dot ${P < 1 ? "lo" : ""}" style="left:${x(P)}%"></span></span>`;
+}
+function detailText(r){
+  if (!r.detail) return "";
+  return r.detail.map(d => d.lux != null ? `${d.lux} lx @ ${d.line > 0 ? d.line + " m R" : d.line < 0 ? (-d.line) + " m L" : "0 m"}: ${fmt(d.value, 1)}` : `@ ${d.dist} m: ${fmt(d.value, 1)}`).join(" · ");
+}
+function table(res){
+  const rows = res.rows.map(r => `<tr><td>${r.name}<span class="d">${r.desc}</span>${r.detail ? `<details><summary>line values</summary><div class="detail">${detailText(r)}</div></details>` : ""}</td>
+    <td class="v">${fmt(r.value, r.unit === "lm" && r.value < 10 ? 3 : 1)} <span class="muted">${r.unit}</span></td>
+    <td>${r.p1}</td><td>${r.p2}</td><td>${fmt(r.points, 2)}${pbar(r.points)}</td><td>${r.w}</td><td>${fmt(r.weighted, 2)}</td></tr>`).join("");
+  return `<div class="tbl"><table><thead><tr><th>Criterion</th><th>Value</th><th>1 pt</th><th>2 pt</th><th>Points</th><th>Weight</th><th>Weighted</th></tr></thead><tbody>${rows}
+    <tr class="tot"><td>Weighted sum → score</td><td></td><td></td><td></td><td></td><td></td><td>${fmt(res.sum, 2)} → ${fmt(res.score, 2)}</td></tr></tbody></table></div>`;
+}
+function renderBeam(id, title, res, g, lamps, kind){
+  const el = $(id);
+  if (!res){ el.hidden = true; return; }
+  el.hidden = false;
+  el.innerHTML = `<div class="card-head"><h2>${title}</h2><span class="rank">${fmt(res.score, 2)} · ${res.rank}</span></div>${table(res)}
+    <div class="plots">
+      <figure><canvas id="${id}_fv" height="220"></canvas><figcaption>Beam pattern, left lamp (isocandela, H 30°L–30°R, V 8°D–5°U)</figcaption><div class="legend" id="${id}_fvl"></div></figure>
+      <figure><canvas id="${id}_tv" height="420"></canvas><figcaption>${kind === "LB" ? "Road surface, both lamps: vertical illuminance with zone A/B/C lines and found ranges" : "250 mm plane, both lamps: vertical illuminance with point directions and found ranges"}</figcaption><div class="legend" id="${id}_tvl"></div></figure>
+    </div>`;
+  requestAnimationFrame(() => { drawFront($(id + "_fv"), g, $(id + "_fvl")); drawTop($(id + "_tv"), lamps, kind, res, $(id + "_tvl")); });
+}
+function render(out){
+  renderStrip(out);
+  renderBeam("resLB", "Passing beam criteria", out.lb, out.lbG, out.lbLamps, "LB");
+  renderBeam("resHB", "Driving beam criteria", out.hb, out.hbG, out.hbLamps, "HB");
+  // diagnostics
+  if (out.lbG){
+    const k = H.kinkCheck(out.lbG), c = cutoffAt(out.lbG, -2), p = peak(out.lbG);
+    const ok = k.ratio > 1.3;
+    $("chkLB").innerHTML = `<span class="pill ${ok ? "ok" : "warn"}">${ok ? "kink on right · RHT" : "more light above H-H on the left"}</span><span>cut-off at 2°L ≈ ${c == null ? "–" : c.toFixed(2) + "°"}</span><span>peak ${Math.round(p.I).toLocaleString()} cd at ${p.h.toFixed(1)}°, ${p.v.toFixed(1)}°</span>` + (ok ? "" : `<span>Check H orientation or tick Mirror H.</span>`);
+  } else $("chkLB").innerHTML = "";
+  if (out.hbG){
+    const p = peak(out.hbG);
+    $("chkHB").innerHTML = `<span>peak ${Math.round(p.I).toLocaleString()} cd at ${p.h.toFixed(1)}°, ${p.v.toFixed(1)}°</span>` + (Math.abs(p.h) > 3 || Math.abs(p.v) > 2 ? `<span class="pill warn">peak far from H-V, check aim</span>` : "");
+  } else $("chkHB").innerHTML = "";
+}
+
+// colour ramp for plots (screen surfaces stay dark in both themes)
+const RAMP = ["#1b2a3d","#23476b","#2f6f8f","#3f9a8c","#8dbb5a","#e0c23a","#f39a2b","#ff5f3a"];
+function css(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+function setup(cv){
+  const r = cv.getBoundingClientRect(), dpr = Math.min(2, window.devicePixelRatio || 1);
+  const w = Math.max(280, r.width), h = +cv.getAttribute("height");
+  cv.width = w * dpr; cv.height = h * dpr; cv.style.height = h + "px";
+  const c = cv.getContext("2d"); c.setTransform(dpr, 0, 0, dpr, 0, 0); return { c, w, h };
+}
+function legend(el, levels, unit){
+  el.innerHTML = levels.map((l, i) => `<span><i style="background:${RAMP[i + 1]}"></i>≥${l >= 1000 ? (l / 1000) + "k" : l} ${unit}</span>`).join("");
+}
+function drawFront(cv, g, lg){
+  const { c, w, h } = setup(cv), hmin = -30, hmax = 30, vmin = -8, vmax = 5;
+  const pad = { l: 34, r: 8, t: 8, b: 22 }, pw = w - pad.l - pad.r, ph = h - pad.t - pad.b;
+  const levels = [100, 300, 1000, 3000, 10000, 20000, 40000];
+  const img = c.createImageData(Math.round(pw), Math.round(ph));
+  const cols = RAMP.map(hx => [parseInt(hx.slice(1,3),16), parseInt(hx.slice(3,5),16), parseInt(hx.slice(5,7),16)]);
+  for (let y = 0; y < img.height; y++){ const v = vmax - (y + .5) / img.height * (vmax - vmin);
+    for (let x = 0; x < img.width; x++){ const hh = hmin + (x + .5) / img.width * (hmax - hmin);
+      const I = H.Inear(g, hh, v); let k = 0; while (k < levels.length && I >= levels[k]) k++;
+      const col = cols[k], o = (y * img.width + x) * 4; img.data[o] = col[0]; img.data[o+1] = col[1]; img.data[o+2] = col[2]; img.data[o+3] = 255; } }
+  c.fillStyle = css("--screen"); c.fillRect(0, 0, w, h);
+  const tmp = document.createElement("canvas"); tmp.width = img.width; tmp.height = img.height; tmp.getContext("2d").putImageData(img, 0, 0);
+  c.fillRect(0, 0, w, h); c.drawImage(tmp, pad.l, pad.t);
+  const X = hh => pad.l + (hh - hmin) / (hmax - hmin) * pw, Y = v => pad.t + (vmax - v) / (vmax - vmin) * ph;
+  c.strokeStyle = "rgba(255,255,255,.55)"; c.lineWidth = 1; c.setLineDash([4, 3]);
+  c.beginPath(); c.moveTo(X(hmin), Y(0)); c.lineTo(X(hmax), Y(0)); c.moveTo(X(0), Y(vmin)); c.lineTo(X(0), Y(vmax)); c.stroke(); c.setLineDash([]);
+  c.fillStyle = css("--screen-ink"); c.font = "11px " + css("--f-mono");
+  c.textAlign = "center"; [-30,-20,-10,0,10,20,30].forEach(t => c.fillText((t < 0 ? -t + "L" : t > 0 ? t + "R" : "0"), X(t), h - 6));
+  c.textAlign = "right"; [-8,-4,0,4].forEach(t => c.fillText(t + "°", pad.l - 4, Y(t) + 4));
+  legend(lg, levels, "cd");
+}
+function drawTop(cv, lamps, kind, res, lg){
+  const { c, w, h } = setup(cv), xmin = -20, xmax = 20, zmax = kind === "LB" ? 160 : 260, y0 = kind === "LB" ? 0 : 0.25;
+  const pad = { l: 34, r: 8, t: 8, b: 22 }, pw = w - pad.l - pad.r, ph = h - pad.t - pad.b;
+  const levels = [0.5, 1, 3, 5, 10, 20, 50];
+  const cols = RAMP.map(hx => [parseInt(hx.slice(1,3),16), parseInt(hx.slice(3,5),16), parseInt(hx.slice(5,7),16)]);
+  const iw = Math.round(pw / 2), ih = Math.round(ph / 2), img = new ImageData(iw, ih);
+  for (let j = 0; j < ih; j++){ const z = zmax * (1 - (j + .5) / ih);
+    for (let i = 0; i < iw; i++){ const x = xmin + (i + .5) / iw * (xmax - xmin);
+      const E = z > 0.5 ? H.Ev(lamps, x, y0, z) : 0; let k = 0; while (k < levels.length && E >= levels[k]) k++;
+      const col = cols[k], o = (j * iw + i) * 4; img.data[o] = col[0]; img.data[o+1] = col[1]; img.data[o+2] = col[2]; img.data[o+3] = 255; } }
+  const tmp = document.createElement("canvas"); tmp.width = iw; tmp.height = ih; tmp.getContext("2d").putImageData(img, 0, 0);
+  c.fillStyle = css("--screen"); c.fillRect(0, 0, w, h);
+  c.imageSmoothingEnabled = false; c.drawImage(tmp, pad.l, pad.t, pw, ph);
+  const X = x => pad.l + (x - xmin) / (xmax - xmin) * pw, Z = z => pad.t + (1 - z / zmax) * ph;
+  // lane markings
+  c.strokeStyle = "rgba(255,255,255,.35)"; c.setLineDash([6, 8]); c.beginPath(); c.moveTo(X(-1.75), Z(0)); c.lineTo(X(-1.75), Z(zmax)); c.stroke(); c.setLineDash([]);
+  c.lineWidth = 1.2; c.strokeStyle = "rgba(255,255,255,.75)";
+  const line = (pts) => { c.beginPath(); pts.forEach((p, i) => i ? c.lineTo(X(p[0]), Z(p[1])) : c.moveTo(X(p[0]), Z(p[1]))); c.stroke(); };
+  const mark = (x, z, col) => { c.fillStyle = col; c.beginPath(); c.arc(X(x), Z(z), 3.2, 0, 7); c.fill(); };
+  const rowBy = k => res.rows.find(r => r.key === k);
+  if (kind === "LB"){
+    const s5 = Math.sin(5 * Math.PI / 180), c5 = Math.cos(5 * Math.PI / 180);
+    [0, 1.5, 3].forEach(x0 => { line([[x0, 0], [x0, zmax]]); line([[x0, 0], [x0 + zmax / c5 * s5, zmax]]); });
+    [-3, -4.5, -6].forEach(x0 => { c.setLineDash([2, 3]); line([[x0, 0], [x0, zmax]]); c.setLineDash([]); });
+    rowBy("A").detail.forEach(d => d.value && mark(d.line, d.value, "#ffffff"));
+    rowBy("B").detail.forEach(d => d.value && mark(d.line + d.value * Math.tan(5 * Math.PI / 180), d.value, "#9fe7ff"));
+    rowBy("C").detail.forEach(d => d.value && mark(d.line, d.value, "#ffd0f0"));
+    rowBy("Doff").detail.forEach(d => d.value && mark(-d.value, d.dist, "#c6ff9f"));
+    rowBy("Dnear").detail.forEach(d => d.value && mark(d.value, d.dist, "#c6ff9f"));
+  } else {
+    const h0 = lamps[0].y;
+    [["PB", -20], ["PA", 0], ["PD", 20]].forEach(([k, dx]) => { const v = rowBy(k).value, n = Math.hypot(dx, h0, 100);
+      line([[0, 0], [dx / n * zmax * 2, 100 / n * zmax * 2]]); if (v) mark(v * dx / n, v * 100 / n, "#ffffff"); });
+    rowBy("Eoff").detail.forEach(d => d.value && mark(-d.value, d.dist, "#c6ff9f"));
+    rowBy("Enear").detail.forEach(d => d.value && mark(d.value, d.dist, "#c6ff9f"));
+  }
+  // axes
+  c.fillStyle = css("--screen-ink"); c.font = "11px " + css("--f-mono"); c.textAlign = "center";
+  [-20, -10, 0, 10, 20].forEach(t => c.fillText(t === 0 ? "0" : (t < 0 ? -t + "L" : t + "R"), X(t), h - 6));
+  c.textAlign = "right"; for (let z = 0; z <= zmax; z += kind === "LB" ? 40 : 50) c.fillText(z + "", pad.l - 4, Z(z) + 4);
+  c.save(); c.translate(10, pad.t + ph / 2); c.rotate(-Math.PI / 2); c.textAlign = "center"; c.fillText("distance (m)", 0, 0); c.restore();
+  legend(lg, levels, "lx");
+  lg.insertAdjacentHTML("beforeend", kind === "LB" ? `<span>· dots: found range per line, D widths at 30/40/50 m</span>` : `<span>· dots: points B, A, D and E widths</span>`);
+}
+let rz; window.addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => state.results && render(state.results), 200); });
+
+// ---------- copy ----------
+$("copy").addEventListener("click", () => {
+  const o = state.results; if (!o){ setStatus("Calculate first.", true); return; }
+  const lines = ["Beam\tCriterion\tValue\tUnit\tPoints\tWeight\tWeighted"];
+  [["LB", o.lb], ["HB", o.hb]].forEach(([b, r]) => { if (!r) return; r.rows.forEach(x => lines.push([b, x.name, x.value.toFixed(3), x.unit, x.points.toFixed(3), x.w, x.weighted.toFixed(3)].join("\t"))); lines.push([b, "Score", r.score.toFixed(2), "", r.rank].join("\t")); });
+  if (o.lb && o.hb){ const adb = parseFloat($("adbScore").value); const s = H.system({ lb: o.lb.score, hb: o.hb.score, adb: isFinite(adb) ? adb : null });
+    Object.entries(s.modes).forEach(([k, m]) => lines.push(["System", k, m.score.toFixed(1), "pts", m.rank, "MEP", m.MEP.toFixed(1)].join("\t"))); }
+  const txt = lines.join("\n");
+  const done = () => setStatus("Results copied (tab-separated, pastes into Excel).");
+  try { navigator.clipboard.writeText(txt).then(done, fallback); } catch (e) { fallback(); }
+  function fallback(){ const ta = document.createElement("textarea"); ta.value = txt; document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); done(); } catch (e) { setStatus("Copy blocked; select the table instead.", true); } ta.remove(); }
+});
+
+run();
+})();
+</script>
+</body>
+</html>
