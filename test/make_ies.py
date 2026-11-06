@@ -21,3 +21,10 @@ write("hb.ies",H,V,hb)
 # right lamp slightly different
 write("lb_rh.ies",H,V,lb*0.92)
 print(lb.max(), hb.max())
+
+# edge case: passing beam with almost no light left of 6°L, so most Zone C lines never reach their lux level
+cut = np.where(HH<0, -0.57, np.minimum(-0.57+np.tan(np.deg2rad(15))*HH, 1.5))
+soft = 1/(1+np.exp((VV-cut)/0.08))
+dark = (30000*np.exp(-((HH-3)/5)**2-((VV+1.6)/1.0)**2) + 5000*np.exp(-(HH/22)**2-((VV+3)/3)**2))*soft
+dark = dark/(1+np.exp(-(HH+6)/0.5))
+write("dark_left.ies",H,V,dark)

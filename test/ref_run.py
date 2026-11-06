@@ -5,9 +5,13 @@ import sys, numpy as np, scipy.interpolate as si
 from scipy.interpolate import RegularGridInterpolator
 class interp2d:
     def __init__(self, x, y, z, kind='linear', fill_value=None):
-        self.f = RegularGridInterpolator((np.asarray(y), np.asarray(x)), np.asarray(z), bounds_error=False, fill_value=fill_value)
+        self.x, self.y, self.clamp = np.asarray(x), np.asarray(y), fill_value is None
+        self.f = RegularGridInterpolator((self.y, self.x), np.asarray(z), bounds_error=False, fill_value=fill_value)
     def __call__(self, xn, yn):
-        X, Y = np.meshgrid(np.atleast_1d(xn), np.atleast_1d(yn))
+        xn, yn = np.atleast_1d(xn), np.atleast_1d(yn)
+        if self.clamp:  # interp2d without fill_value: FITPACK clamps to the edge (nearest extrapolation)
+            xn = np.clip(xn, self.x.min(), self.x.max()); yn = np.clip(yn, self.y.min(), self.y.max())
+        X, Y = np.meshgrid(xn, yn)
         return self.f(np.stack([Y.ravel(), X.ravel()], -1)).reshape(X.shape)
 si.interp2d = interp2d
 REF = sys.argv[1] if len(sys.argv) > 1 else '../HSPR/src'  # path to HSPR-Software/HSPR/src
