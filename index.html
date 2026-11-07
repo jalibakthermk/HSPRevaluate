@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>HSPR Headlamp Rater</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 48 36%22%3E%3Cpath d=%22M15 6c-6 0-10.5 5.4-10.5 12S9 30 15 30h3V6z%22 fill=%22none%22 stroke=%22%23b86a00%22 stroke-width=%222.6%22 stroke-linejoin=%22round%22/%3E%3Cg stroke=%22%23b86a00%22 stroke-width=%222.6%22 stroke-linecap=%22round%22%3E%3Cpath d=%22M23 11l7 3.2%22/%3E%3Cpath d=%22M23 17.5l11.5 5.2%22/%3E%3Cpath d=%22M23 24l16 7.2%22/%3E%3C/g%3E%3Cpath d=%22M41 3.5l1.6 3.3 3.6.5-2.6 2.5.6 3.6-3.2-1.7-3.2 1.7.6-3.6-2.6-2.5 3.6-.5z%22 fill=%22%23b86a00%22/%3E%3C/svg%3E">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Saira+Semi+Condensed:wght@500;600;700&display=swap">
@@ -36,7 +37,10 @@ h1{font-size:clamp(28px,5vw,40px);font-weight:700;letter-spacing:.01em}
 h2{font-size:22px;font-weight:600}
 h3{font-size:17px;font-weight:600}
 .eyebrow{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-.lede{color:var(--muted);max-width:68ch;margin:6px 0 0}
+h1{display:flex;align-items:center;gap:12px}
+.logo{width:1.6em;height:1.2em;flex:none;color:var(--accent)}
+footer{display:flex;flex-wrap:wrap;gap:4px 16px;justify-content:space-between;font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:14px}
+footer a{color:inherit}
 header{display:grid;gap:4px}
 .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,460px),1fr));gap:16px}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;gap:14px;min-width:0}
@@ -102,7 +106,9 @@ canvas{width:100%;display:block;border-radius:8px;background:var(--screen)}
 .pill.ok{color:var(--good)} .pill.warn{color:var(--warn)}
 .checksline{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:13px;color:var(--muted)}
 .notes{display:grid;gap:10px}
-.notes ol{margin:0;padding-left:20px;display:grid;gap:7px;max-width:90ch}
+.notes ul{margin:0;padding-left:20px;display:grid;gap:6px;max-width:90ch}
+.notes summary{cursor:pointer;list-style-position:inside}
+.notes summary h3{display:inline}
 .notes li{font-size:14px}
 .notes code{font-family:var(--f-mono);font-size:12.5px;background:var(--sunk);padding:1px 5px;border-radius:4px}
 .muted{color:var(--muted)}
@@ -117,19 +123,17 @@ canvas{width:100%;display:block;border-radius:8px;background:var(--screen)}
 <body>
 <div class="wrap">
   <header>
-    <div class="eyebrow">GTB Recommended Practice SEP2023 · CIE S 021/E:2011</div>
-    <h1>HSPR Headlamp Rater</h1>
-    <p class="lede">Headlight Safety Performance Rating for the passing beam and driving beam, calculated from your IES files and the lamp installation. The algorithms reproduce the TU Darmstadt reference software that GTB specifies, including its search order and rounding, and flag the cases where that software behaves unexpectedly.</p>
+    <h1><svg class="logo" viewBox="0 0 48 36" aria-hidden="true"><path d="M15 6c-6 0-10.5 5.4-10.5 12S9 30 15 30h3V6z" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round"/><g stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M23 11l7 3.2"/><path d="M23 17.5l11.5 5.2"/><path d="M23 24l16 7.2"/></g><path d="M41 3.5l1.6 3.3 3.6.5-2.6 2.5.6 3.6-3.2-1.7-3.2 1.7.6-3.6-2.6-2.5 3.6-.5z" fill="currentColor"/></svg>HSPR Headlamp Rater</h1>
   </header>
 
-  <div id="sampleBanner" class="banner">Showing <b>synthetic sample beams</b> (an LED-style passing beam and a driving beam) so you can see the output. Load your own IES files below and press Calculate.</div>
+  <div id="sampleBanner" class="banner">Sample beams shown. Load your IES files and press Calculate.</div>
 
   <section class="grid2">
     <div class="card" id="cardLB">
-      <div class="card-head"><h2>Passing beam</h2><span class="tag">low beam · 9 criteria</span></div>
+      <div class="card-head"><h2>Passing beam</h2></div>
       <div class="files">
-        <div class="drop" id="dropLB_L"><b>Left lamp IES</b><span>Required · sample loaded</span><input type="file" id="fLB_L" accept=".ies,.IES,.txt"></div>
-        <div class="drop" id="dropLB_R"><b>Right lamp IES</b><span>Optional · uses left file</span><input type="file" id="fLB_R" accept=".ies,.IES,.txt"></div>
+        <div class="drop" id="dropLB_L"><b>Left lamp IES</b><span>Sample loaded</span><input type="file" id="fLB_L" accept=".ies,.IES,.txt"></div>
+        <div class="drop" id="dropLB_R"><b>Right lamp IES</b><span>Optional</span><input type="file" id="fLB_R" accept=".ies,.IES,.txt"></div>
       </div>
       <div class="fields">
         <label class="f">Mounting height (m)<input type="number" id="hLB" value="0.65" step="0.01" min="0.2" max="2"></label>
@@ -141,10 +145,10 @@ canvas{width:100%;display:block;border-radius:8px;background:var(--screen)}
     </div>
 
     <div class="card" id="cardHB">
-      <div class="card-head"><h2>Driving beam</h2><span class="tag">high beam · 8 criteria</span></div>
+      <div class="card-head"><h2>Driving beam</h2></div>
       <div class="files">
-        <div class="drop" id="dropHB_L"><b>Left lamp IES</b><span>Required · sample loaded</span><input type="file" id="fHB_L" accept=".ies,.IES,.txt"></div>
-        <div class="drop" id="dropHB_R"><b>Right lamp IES</b><span>Optional · uses left file</span><input type="file" id="fHB_R" accept=".ies,.IES,.txt"></div>
+        <div class="drop" id="dropHB_L"><b>Left lamp IES</b><span>Sample loaded</span><input type="file" id="fHB_L" accept=".ies,.IES,.txt"></div>
+        <div class="drop" id="dropHB_R"><b>Right lamp IES</b><span>Optional</span><input type="file" id="fHB_R" accept=".ies,.IES,.txt"></div>
       </div>
       <div class="fields">
         <label class="f">Mounting height (m)<input type="number" id="hHB" value="0.65" step="0.01" min="0.2" max="2"></label>
@@ -153,28 +157,28 @@ canvas{width:100%;display:block;border-radius:8px;background:var(--screen)}
       </div>
       <div class="checks">
         <label><input type="checkbox" id="mHB"> File H axis is reversed (+ = left)</label>
-        <label><input type="checkbox" id="addLB"> Passing beam stays on (at its own mounting)</label>
+        <label><input type="checkbox" id="addLB"> Passing beam on</label>
       </div>
       <div class="checksline" id="chkHB"></div>
     </div>
   </section>
 
   <section class="card">
-    <div class="card-head"><h3>System rating</h3><span class="tag">GTB §8 · MEP → score</span></div>
+    <div class="card-head"><h3>System rating</h3></div>
     <div class="fields">
       <label class="f">Driving-beam operation
         <select id="mode"><option value="manual">Manually operated</option><option value="automatic" selected>Automatic (camera on/off)</option><option value="adb">Adaptive driving beam</option></select></label>
-      <label class="f">ADB score, if known (1–5)<input type="number" id="adbScore" placeholder="e.g. 3.06" step="0.01" min="0" max="7"></label>
+      <label class="f">ADB score (optional)<input type="number" id="adbScore" placeholder="e.g. 3.06" step="0.01" min="0" max="7"></label>
     </div>
     <details class="opts">
       <summary>Calculation options</summary>
       <div class="fields">
         <label class="f">Traffic
-          <select id="traffic"><option value="RHT" selected>Right-hand traffic</option><option value="LHT">Left-hand traffic (mirrored and rated as RHT)</option></select></label>
+          <select id="traffic"><option value="RHT" selected>Right-hand traffic</option><option value="LHT">Left-hand traffic</option></select></label>
         <label class="f">IES Type B files
-          <select id="typeB"><option value="convert" selected>Convert to H/V geometry</option><option value="asA">Read as H/V grid (like the .exe)</option></select></label>
-        <label class="f">Range lines that never reach their lux level
-          <select id="unmet"><option value="reference" selected>Leave out, like the reference</option><option value="zero">Count as 0 m</option></select></label>
+          <select id="typeB"><option value="convert" selected>Convert to H/V geometry</option><option value="asA">Read as H/V grid (as .exe)</option></select></label>
+        <label class="f">Unmet Zone A/B/C lines
+          <select id="unmet"><option value="reference" selected>Leave out (as .exe)</option><option value="zero">Count as 0 m</option></select></label>
       </div>
     </details>
     <div class="bar">
@@ -189,19 +193,22 @@ canvas{width:100%;display:block;border-radius:8px;background:var(--screen)}
   <section class="card" id="resLB"></section>
   <section class="card" id="resHB"></section>
 
-  <section class="card notes">
-    <h3>Method notes</h3>
-    <ol>
-      <li><b>Geometry.</b> Origin on the road at the vehicle centre, x positive to the right, z along the road. The left lamp sits at −separation/2 and the right lamp at +separation/2, both at the mounting height. GTB §9.2 allows unequal lateral positions; this tool and the reference assume a symmetric pair. Ratings are for right-hand traffic. The Left-hand traffic option mirrors both patterns and swaps the lamps, which is the transformation GTB §3 Note 1 describes.</li>
-      <li><b>Illuminance</b> is vertical illuminance on a plane facing the vehicle, <code>E = I·cos/d²</code> with cos = z/d, summed over the lamps. Intensity is read from the nearest point of a 0.05° grid spanning 45°L–45°R and 15°D–15°U, as in the reference. For directions outside that window the reference reuses the edge value, and so does this tool. Light outside ±45° therefore never counts, but the 45° column stands in for it.</li>
-      <li><b>Passing beam.</b> Zones A and B: farthest distance where 1, 3 and 5 lx are exceeded on the road surface along lines 0, 1.5 and 3 m right (B turned 5° to the right), searched inward from 400 m in 0.5 m steps, mean of 9 values. Zone C: the same at 250 mm height, lines 3, 4.5 and 6 m left. Zone D: lateral reach of 3 lx on the road at 30, 40 and 50 m, searched inward from 20 m in 0.1 m steps. Zone E: the same at 250 mm height at 10 and 20 m. Glare: weighted luminous flux from each lamp into a window at 50 m (x −7.9 to +1.3 m, height 0.93–1.62 m, 5 × 8 eye-position weights), summed over both lamps. The reference rounds the window edges relative to the mounting height to 0.01 m, and this tool does the same.</li>
-      <li><b>Unmet range lines.</b> When a Zone A, B or C line never reaches its lux level, the reference leaves that line, and every line evaluated after it, out of the mean. A beam that leaves most lines dark can still score well on that zone. The tool follows the reference by default and shows a warning with the value you get by counting those lines as 0 m. You can switch to counting them as 0 m in Calculation options.</li>
-      <li><b>Driving beam.</b> Points A–E: farthest distance along a ray from the road origin towards (x, y, 100 m) where 3 lx is exceeded, searched from 800 m: A (0, h), B (−20, h), C (0, h+9), D (+20, h), E (0, h−2), with h the mounting height. Zone E is as for the passing beam. If a point or width never reaches 3 lx it counts as 0 m, with a warning; the reference stops with an error there. "Passing beam stays on" adds the passing-beam lamps at their own height and separation, as GTB §6.2 allows. The reference has no such option.</li>
-      <li><b>Flux</b> follows the reference exactly. The two lamps are merged, the result is resampled at 0.01° and summed × tan²(0.01°), over 45°L–45°R with 15°D–5°U for the passing beam and 5°D–10°U for the driving beam. There is no cos V factor, so the figure is about 1–2% above a true solid-angle integral. Ratings stay comparable with the reference because it uses the same method.</li>
-      <li><b>Scoring.</b> Criterion points <code>P = (V − V₁)/(V₂ − V₁) + 1</code>, with V₁ = mean − SD and V₂ = mean + SD of the CIE database (reversed for glare). The weighted sum is normalised between the 1-point and 5-point benchmarks. EP<sub>LB</sub> = 5.80·N + 64.17 m, EP<sub>HB</sub> = 11.71·N + 141.27 m, EP<sub>ADB</sub> = 10.87·N + 94.13 m; system score = 0.626·MEP − 36.42. Rounding follows the reference: criterion values and points to 0.001, scores to 0.01, EP to 0.01 m, system score to 0.1. Verbal ranks follow GTB Table 18. The reference rounds to one decimal before choosing a rank, so a score in the last 0.05 (single function) or 0.5 (system) below a boundary gets the next rank up there.</li>
-      <li><b>IES handling.</b> Type A files (horizontal angle in the horizontal plane) are used directly. Type B files are converted to that geometry by default; the reference reads them unconverted, which mainly shifts flux and wide-angle widths. Type C files are converted, with the polar axis detected from where the peak lies, so check the beam preview. The candela multiplier and ballast factor are applied, while the reference ignores them. TILT=INCLUDE files are read, while the reference rejects them. The aim shift moves the beam vertically before rating. HSPR expects the cut-off at the manufacturer's declared aim, for example −1% ≈ −0.57°.</li>
-    </ol>
-  </section>
+  <details class="card notes">
+    <summary><h3>Method notes</h3></summary>
+    <ul>
+      <li>Lamps at ±separation/2, mounting height above the road. Vertical illuminance <code>E = I·cos/d²</code>, nearest point of a 0.05° grid (45°L–45°R, 15°D–15°U).</li>
+      <li>Zones A/B: 1, 3, 5 lx on the road along 0, 1.5, 3 m R (B turned 5° R). Zone C: 250 mm, 3, 4.5, 6 m L. Zone D: 3 lx width on the road at 30/40/50 m. Zone E: 3 lx width at 250 mm, 10/20 m.</li>
+      <li>Points A–E: 3 lx along rays to (0, h), (−20, h), (0, h+9), (+20, h), (0, h−2) at 100 m.</li>
+      <li>Glare: weighted flux into x −7.9…+1.3 m, 0.93…1.62 m at 50 m. Flux: LB 15°D–5°U, HB 5°D–10°U, both 45°L–45°R.</li>
+      <li><code>P = (V − V₁)/(V₂ − V₁) + 1</code>; EP<sub>LB</sub> = 5.80N + 64.17, EP<sub>HB</sub> = 11.71N + 141.27, EP<sub>ADB</sub> = 10.87N + 94.13; score = 0.626·MEP − 36.42. Ranks per GTB Table 18.</li>
+      <li>Calculation and rounding as the TU Darmstadt reference software. Differences: Type B converted, Type C supported, candela multiplier applied, unmet lines warned.</li>
+    </ul>
+  </details>
+
+  <footer>
+    <span>© 2026 Jalib Akther · <a href="https://github.com/jalibakthermk/HSPRevaluate">HSPRevaluate</a></span>
+    <span>Licensed under <a href="https://www.gnu.org/licenses/gpl-3.0.html">GPL-3.0</a> · Based on the <a href="https://github.com/HSPR-Software/HSPR">HSPR software</a> by TU Darmstadt (GPL-3.0)</span>
+  </footer>
 </div>
 
 <script>
@@ -663,7 +670,7 @@ function wireDrop(key){
         texts[key] = ies; state.names[key] = file.name;
         span.textContent = `${file.name} · Type ${ies.typeName} · ${ies.V.length}×${ies.H.length}`;
         box.classList.add("has");
-        if (key.endsWith("_L")){ state.sample = false; ["LB_L","HB_L"].forEach(k => { if (!texts[k]) $("drop" + k).querySelector("span").textContent = "Required · no file loaded"; }); }
+        if (key.endsWith("_L")){ state.sample = false; ["LB_L","HB_L"].forEach(k => { if (!texts[k]) $("drop" + k).querySelector("span").textContent = "No file loaded"; }); }
         setStatus(`Loaded ${file.name}. Press Calculate rating.`);
       } catch (e) { setStatus(`${file.name}: ${e.message}`, true); }
     };
@@ -722,15 +729,15 @@ function run(){
       if (lbObj){
         out.lb = H.assessLB(lbObj, { unmet: $("unmet").value }); out.lbLamps = out.lb.lamps; out.lbG = lbL;
         out.lb.warnings = out.lb.warnings.concat(notes([lbL, lbR]));
-        if (!lbR && texts.LB_L) out.lb.warnings.push("No right-lamp file: the left-lamp file is used for both lamps.");
+        if (!lbR && texts.LB_L) out.lb.warnings.push("Left-lamp file used for both lamps.");
       }
       if (hbObj){
         const withLB = $("addLB").checked ? lbObj : null;
         out.hb = H.assessHB(hbObj, withLB); out.hbLamps = out.hb.lamps; out.hbG = hbL;
         out.hb.warnings = out.hb.warnings.concat(notes([hbL, hbR]));
-        if (!hbR && texts.HB_L) out.hb.warnings.push("No right-lamp file: the left-lamp file is used for both lamps.");
-        if ($("addLB").checked && !lbObj) out.hb.warnings.push("Passing beam stays on is ticked, but no passing-beam file is loaded, so the driving beam is rated alone.");
-        if (withLB) out.hb.warnings.push("Rated with the passing beam on, as GTB §6.2 allows. The reference .exe has no option for this; there you would load a driving-beam file measured with the passing beam on.");
+        if (!hbR && texts.HB_L) out.hb.warnings.push("Left-lamp file used for both lamps.");
+        if ($("addLB").checked && !lbObj) out.hb.warnings.push("Passing beam on is ticked but no passing-beam file is loaded; rated alone.");
+        if (withLB) out.hb.warnings.push("Rated with the passing beam on.");
       }
       state.results = out;
       $("sampleBanner").hidden = !state.sample || !!(texts.LB_L || texts.HB_L);
@@ -759,7 +766,7 @@ function renderStrip(out){
       const others = Object.keys(sys.modes).filter(k => k !== mode).map(k => `${k} ${fmt(sys.modes[k].score, 1)}`).join(" · ");
       cards.push(`<div class="score sys"><div class="eyebrow">System score · ${label}</div><div class="num">${fmt(m.score, 1)} <small>pts</small></div><span class="rank">${m.rank}</span>${ladder(H.RANKS.indexOf(m.rank))}<div class="sub">MEP ${fmt(m.MEP, 1)} m · EP LB ${fmt(sys.EP.LB, 1)} m · EP HB ${fmt(sys.EP.HB, 1)} m${sys.EP.ADB ? ` · EP ADB ${fmt(sys.EP.ADB, 1)} m` : ""}</div>${others ? `<div class="sub">other modes: ${others}</div>` : ""}</div>`);
     } else {
-      cards.push(`<div class="score sys"><div class="eyebrow">System score · ADB</div><div class="sub">Enter the ADB score to get the adaptive-mode system score. ADB needs the six traffic-scenario light distributions, which this tool does not rate.</div></div>`);
+      cards.push(`<div class="score sys"><div class="eyebrow">System score · ADB</div><div class="sub">Enter an ADB score.</div></div>`);
     }
   } else cards.push(`<div class="score sys"><div class="eyebrow">System score</div><div class="sub">Needs both beams.</div></div>`);
   $("strip").innerHTML = cards.join("");
@@ -774,7 +781,7 @@ function detailText(r){
   return r.detail.map(d => d.lux != null ? `${d.lux} lx @ ${d.line > 0 ? d.line + " m R" : d.line < 0 ? (-d.line) + " m L" : "0 m"}: ${st(d)}` : `@ ${d.dist} m: ${st(d)}`).join(" · ");
 }
 function table(res){
-  const rows = res.rows.map(r => `<tr><td>${r.name}<span class="d">${r.desc}</span>${r.detail ? `<details><summary>line values</summary><div class="detail">${detailText(r)}</div></details>` : ""}</td>
+  const rows = res.rows.map(r => `<tr><td>${r.name}${r.detail ? `<details><summary>line values</summary><div class="detail">${detailText(r)}</div></details>` : ""}</td>
     <td class="v">${fmt(r.value, r.unit === "lm" && r.value < 10 ? 3 : 1)} <span class="muted">${r.unit}</span></td>
     <td>${r.p1}</td><td>${r.p2}</td><td>${fmt(r.points, 2)}${pbar(r.points)}</td><td>${r.w}</td><td>${fmt(r.weighted, 2)}</td></tr>`).join("");
   return `<div class="tbl"><table><thead><tr><th>Criterion</th><th>Value</th><th>1 pt</th><th>2 pt</th><th>Points</th><th>Weight</th><th>Weighted</th></tr></thead><tbody>${rows}
@@ -788,8 +795,8 @@ function renderBeam(id, title, res, g, lamps, kind){
   const warns = res.warnings && res.warnings.length ? `<ul class="warns">${res.warnings.map(w => `<li>${esc(w)}</li>`).join("")}</ul>` : "";
   el.innerHTML = `<div class="card-head"><h2>${title}</h2><span class="rank">${fmt(res.score, 2)} · ${res.rank}</span></div>${warns}${table(res)}
     <div class="plots">
-      <figure><canvas id="${id}_fv" height="220"></canvas><figcaption>Beam pattern, left lamp (isocandela, H 30°L–30°R, V 8°D–5°U)</figcaption><div class="legend" id="${id}_fvl"></div></figure>
-      <figure><canvas id="${id}_tv" height="420"></canvas><figcaption>${kind === "LB" ? "Road surface, both lamps: vertical illuminance with zone A/B/C lines and found ranges" : "250 mm plane, both lamps: vertical illuminance with point directions and found ranges"}</figcaption><div class="legend" id="${id}_tvl"></div></figure>
+      <figure><canvas id="${id}_fv" height="220"></canvas><figcaption>Left lamp, cd</figcaption><div class="legend" id="${id}_fvl"></div></figure>
+      <figure><canvas id="${id}_tv" height="420"></canvas><figcaption>${kind === "LB" ? "Road surface, lx" : "250 mm plane, lx"}</figcaption><div class="legend" id="${id}_tvl"></div></figure>
     </div>`;
   requestAnimationFrame(() => { drawFront($(id + "_fv"), g, $(id + "_fvl")); drawTop($(id + "_tv"), lamps, kind, res, $(id + "_tvl")); });
 }
@@ -887,7 +894,6 @@ function drawTop(cv, lamps, kind, res, lg){
   c.textAlign = "right"; for (let z = 0; z <= zmax; z += kind === "LB" ? 40 : 50) c.fillText(z + "", pad.l - 4, Z(z) + 4);
   c.save(); c.translate(10, pad.t + ph / 2); c.rotate(-Math.PI / 2); c.textAlign = "center"; c.fillText("distance (m)", 0, 0); c.restore();
   legend(lg, levels, "lx");
-  lg.insertAdjacentHTML("beforeend", kind === "LB" ? `<span>· dots: found range per line, D widths at 30/40/50 m</span>` : `<span>· dots: points B, A, D and E widths</span>`);
 }
 let rz; window.addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => state.results && render(state.results), 200); });
 
