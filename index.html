@@ -7,172 +7,230 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 48 36%22%3E%3Cpath d=%22M15 6c-6 0-10.5 5.4-10.5 12S9 30 15 30h3V6z%22 fill=%22none%22 stroke=%22%23b86a00%22 stroke-width=%222.6%22 stroke-linejoin=%22round%22/%3E%3Cg stroke=%22%23b86a00%22 stroke-width=%222.6%22 stroke-linecap=%22round%22%3E%3Cpath d=%22M23 11l7 3.2%22/%3E%3Cpath d=%22M23 17.5l11.5 5.2%22/%3E%3Cpath d=%22M23 24l16 7.2%22/%3E%3C/g%3E%3Cpath d=%22M41 3.5l1.6 3.3 3.6.5-2.6 2.5.6 3.6-3.2-1.7-3.2 1.7.6-3.6-2.6-2.5 3.6-.5z%22 fill=%22%23b86a00%22/%3E%3C/svg%3E">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Saira+Semi+Condensed:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Semi+Condensed:wght@600;700&family=Source+Sans+3:wght@400;600&display=swap">
 <style>
-/* Layout: lab worksheet — inputs as two beam cards, then a score strip, criterion tables and two "measuring screen" plots per beam */
+/* Bench layout: a control rail that stays in view with the Calculate action pinned to its foot; results on the right
+   read top-down as scores, criterion tables and plots. Dark panels are the photometric plots only. */
 :root{
-  --bg:#eef1f4; --surface:#ffffff; --sunk:#e3e8ee; --ink:#18202b; --muted:#5a6676; --line:#cfd6df;
-  --accent:#b86a00; --accent-ink:#ffffff; --accent-soft:#fbe9cf;
-  --good:#1f7a4d; --warn:#a15c00; --bad:#b3261e;
-  --screen:#0e131a; --screen-ink:#c9d3df; --screen-line:#3a4656;
-  --f-display:"Saira Semi Condensed","Arial Narrow",system-ui,sans-serif;
-  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
-  --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  --bg:#f3f5f6; --surface:#ffffff; --sunk:#e9edf0; --ink:#15212b; --muted:#55656f; --line:#d5dce1; --line-soft:#e6ebee;
+  --accent:#9a5600; --accent-ink:#ffffff; --accent-soft:#f7e9d3;
+  --good:#1f7a45; --warn:#a15c00; --bad:#c0332a;
+  --screen:#0d151d; --screen-ink:#c7d4de; --screen-dim:#8494a1;
+  --f-display:"Saira Semi Condensed","Arial Narrow",sans-serif;
+  --f-body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+  --f-mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#11161d; --surface:#18202a; --sunk:#0d1218; --ink:#e3e9f0; --muted:#94a1b2; --line:#2b3644;
-  --accent:#f0a32e; --accent-ink:#1a1206; --accent-soft:#3a2a12;
-  --good:#5cc48d; --warn:#f0a32e; --bad:#ff7a6e;
-  --screen:#0a0e13; --screen-ink:#c9d3df; --screen-line:#334050; color-scheme:dark}}
+  --bg:#0b1117; --surface:#121b23; --sunk:#0c141b; --ink:#e3e9ee; --muted:#93a3af; --line:#25343f; --line-soft:#1b2832;
+  --accent:#f0a43a; --accent-ink:#1b1206; --accent-soft:#33260f;
+  --good:#4cc27a; --warn:#f0a43a; --bad:#ff6b5d; color-scheme:dark;}}
 :root[data-theme="dark"]{
-  --bg:#11161d; --surface:#18202a; --sunk:#0d1218; --ink:#e3e9f0; --muted:#94a1b2; --line:#2b3644;
-  --accent:#f0a32e; --accent-ink:#1a1206; --accent-soft:#3a2a12;
-  --good:#5cc48d; --warn:#f0a32e; --bad:#ff7a6e;
-  --screen:#0a0e13; --screen-ink:#c9d3df; --screen-line:#334050; color-scheme:dark}
+  --bg:#0b1117; --surface:#121b23; --sunk:#0c141b; --ink:#e3e9ee; --muted:#93a3af; --line:#25343f; --line-soft:#1b2832;
+  --accent:#f0a43a; --accent-ink:#1b1206; --accent-soft:#33260f;
+  --good:#4cc27a; --warn:#f0a43a; --bad:#ff6b5d; color-scheme:dark;}
 *{box-sizing:border-box}
-body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5}
-.wrap{max-width:1180px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:22px}
-h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.1}
-h1{font-size:clamp(28px,5vw,40px);font-weight:700;letter-spacing:.01em}
-h2{font-size:22px;font-weight:600}
-h3{font-size:17px;font-weight:600}
-.eyebrow{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-h1{display:flex;align-items:center;gap:12px}
-.logo{width:1.6em;height:1.2em;flex:none;color:var(--accent)}
-footer{display:flex;flex-wrap:wrap;gap:4px 16px;justify-content:space-between;font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:14px}
-footer a{color:inherit}
-header{display:grid;gap:4px}
-.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,460px),1fr));gap:16px}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;gap:14px;min-width:0}
-.card-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
-.tag{font-family:var(--f-mono);font-size:12px;padding:2px 8px;border-radius:999px;background:var(--sunk);color:var(--muted)}
-.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
-label.f{display:grid;gap:4px;font-size:13px;color:var(--muted)}
-input[type=number],select{font:500 15px var(--f-mono);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:7px 9px;width:100%}
-input:focus-visible,select:focus-visible,button:focus-visible,summary:focus-visible,.drop:focus-within{outline:2px solid var(--accent);outline-offset:2px}
-.files{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}
-.drop{position:relative;border:1.5px dashed var(--line);border-radius:8px;padding:10px 12px;background:var(--bg);display:grid;gap:2px;cursor:pointer;min-width:0}
-.drop.has{border-style:solid;border-color:var(--accent)}
-.drop.over{background:var(--accent-soft)}
-.drop input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
-.drop b{font-size:13px;font-weight:600}
-.drop span{font-family:var(--f-mono);font-size:12px;color:var(--muted);overflow-wrap:anywhere}
-.checks{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:13.5px}
-.checks label{display:flex;gap:7px;align-items:center}
-.checks input{accent-color:var(--accent);width:16px;height:16px}
-.bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
-button{font:600 15px var(--f-body);border-radius:8px;padding:10px 18px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
-button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
-button:disabled{opacity:.55;cursor:progress}
-.status{font-size:13.5px;color:var(--muted)}
-.status.err{color:var(--bad)}
-.banner{border:1px solid var(--accent);background:var(--accent-soft);border-radius:8px;padding:9px 12px;font-size:13.5px}
-/* score strip */
-.strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:12px}
-.score{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:grid;gap:6px;align-content:start}
-.score.sys{border-color:var(--accent)}
-.score .num{font:600 38px/1 var(--f-display);font-variant-numeric:tabular-nums}
-.score .num small{font-size:16px;color:var(--muted);font-weight:500}
-.rank{justify-self:start;font:600 12.5px var(--f-mono);letter-spacing:.04em;padding:3px 9px;border-radius:999px;background:var(--accent-soft);color:var(--ink);border:1px solid var(--accent)}
-.ladder{display:grid;grid-template-columns:repeat(6,1fr);gap:3px;margin-top:2px}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;font-variant-numeric:tabular-nums;margin:0;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:12px 40px}
+.wrap{max-width:1440px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+header{padding:12px 14px;border-bottom:1px solid var(--line)}
+h1{font-family:var(--f-display);font-weight:700;font-size:22px;letter-spacing:.01em;margin:0;line-height:1}
+h2{font:600 18px var(--f-display);margin:0;letter-spacing:.01em}
+.brand{display:flex;align-items:center;gap:10px}
+.logo{width:38px;height:28px;flex:none;color:var(--accent)}
+.bench{display:grid;grid-template-columns:372px minmax(0,1fr);gap:20px;align-items:start}
+
+/* ---- control rail ---- */
+aside{background:var(--surface);border:1px solid var(--line);border-radius:10px;min-width:0;display:flex;flex-direction:column;
+  position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:hidden}
+.rail-body{overflow-y:auto;overscroll-behavior:contain;padding:6px 14px 6px;min-height:0}
+.rail-foot{border-top:1px solid var(--line);padding:12px 14px;display:flex;flex-direction:column;gap:8px;background:var(--surface)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:13.5px;color:var(--muted);min-width:0}
+input[type=number],select{font:15px var(--f-body);font-variant-numeric:tabular-nums;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:5px;padding:7px 9px;width:100%;min-width:0}
+input:hover,select:hover{border-color:var(--muted)}
+input::placeholder{color:var(--muted);opacity:.8}
+input:focus-visible,select:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+code{font:12px var(--f-mono);background:var(--sunk);padding:0 3px;border-radius:3px}
+.btn{font:600 14px var(--f-body);border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:5px;padding:7px 12px;cursor:pointer}
+.btn:hover{border-color:var(--muted)}
+.go{font:700 17px var(--f-display);letter-spacing:.02em;background:var(--accent);color:var(--accent-ink);border:0;border-radius:7px;padding:11px;cursor:pointer;width:100%}
+.go:hover{filter:brightness(1.08)}
+.go:disabled{opacity:.6;cursor:progress;filter:none}
+.go.stale{box-shadow:0 0 0 3px var(--accent-soft),0 0 0 4px var(--accent)}
+.msg{font-size:13.5px;color:var(--muted);margin:0;max-height:5.9em;overflow-y:auto}
+.msg:empty{display:none}
+.msg.err{color:var(--bad);font-weight:600}
+.files{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.drop{position:relative;display:flex;flex-direction:column;gap:2px;border:1.5px dashed var(--line);border-radius:7px;padding:10px 10px;cursor:pointer;background:var(--sunk);min-width:0}
+.drop:hover,.drop.over{border-color:var(--accent);background:var(--accent-soft)}
+.drop.has{border-style:solid;border-color:var(--accent);background:var(--surface)}
+.drop:focus-within{outline:2px solid var(--accent);outline-offset:1px}
+.drop input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.drop b{font-weight:600;font-size:14.5px}
+.drop span{font-size:12.5px;color:var(--muted);overflow-wrap:anywhere}
+.chk{display:flex;align-items:center;gap:8px;font-size:14.5px;cursor:pointer}
+.chk input{width:17px;height:17px;accent-color:var(--accent);flex:none}
+.chk small{color:var(--muted);font-size:12.5px}
+
+/* collapsible setting groups: the header carries the current values, so a closed group still tells you its state */
+.secs{display:flex;flex-direction:column}
+details.sec{border-bottom:1px solid var(--line-soft)}
+details.sec:last-child{border-bottom:0}
+details.sec>summary{list-style:none;display:flex;align-items:baseline;gap:10px;padding:12px 2px 12px 18px;cursor:pointer;position:relative;user-select:none}
+details.sec>summary::-webkit-details-marker{display:none}
+details.sec>summary::before{content:"";position:absolute;left:3px;top:50%;width:6px;height:6px;border-right:1.5px solid var(--muted);border-bottom:1.5px solid var(--muted);transform:translateY(-70%) rotate(-45deg);transition:transform .15s}
+details.sec[open]>summary::before{transform:translateY(-85%) rotate(45deg)}
+details.sec>summary:hover .st{color:var(--accent)}
+.st{font-weight:600;font-size:15px;flex:none}
+.sv{font-size:13px;color:var(--muted);margin-left:auto;text-align:right;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+details.sec[open] .sv{visibility:hidden}
+.sb{display:flex;flex-direction:column;gap:10px;padding:2px 0 14px}
+
+/* ---- results ---- */
+main{display:flex;flex-direction:column;gap:20px;min-width:0}
+.hint{font-size:13.5px;color:var(--muted);margin:0;padding:9px 14px;border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:6px;background:var(--surface)}
+.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.summary.n3{grid-template-columns:1.5fr 1fr 1fr}
+.kv{padding:12px 16px 14px;min-width:0;border-right:1px solid var(--line-soft);display:flex;flex-direction:column;gap:4px}
+.kv:last-child{border-right:0}
+.kv b{font:400 13px var(--f-body);color:var(--muted)}
+.kv>span:not(.rank){font:600 26px/1.1 var(--f-display);white-space:nowrap}
+.kv>span small{font-size:15px;color:var(--muted);font-weight:600}
+.kv em{font-style:normal;font-size:12.5px;color:var(--muted);line-height:1.35}
+.kv.verdict{position:relative;padding-left:21px}
+.kv.verdict::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--accent)}
+.kv.verdict>span:not(.rank){font-size:32px}
+.rank{align-self:flex-start;font:600 13px var(--f-body);letter-spacing:.02em;padding:2px 10px;border-radius:99px;background:var(--accent-soft);color:var(--ink);border:1px solid var(--accent)}
+.ladder{display:grid;grid-template-columns:repeat(6,1fr);gap:3px}
 .ladder i{height:6px;border-radius:2px;background:var(--sunk)}
 .ladder i.on{background:var(--accent)}
-.score .sub{font-size:12.5px;color:var(--muted);font-family:var(--f-mono)}
-/* tables */
-.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:8px}
-table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:620px}
-th,td{padding:7px 10px;text-align:right;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums;white-space:nowrap}
-th{font:500 11.5px var(--f-mono);letter-spacing:.05em;text-transform:uppercase;color:var(--muted);background:var(--sunk)}
-td:first-child,th:first-child{text-align:left;white-space:normal;min-width:180px}
-td .d{display:block;font-size:12px;color:var(--muted)}
-td.v{font-family:var(--f-mono);font-weight:500}
+.screen{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden;min-width:0}
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:10px 14px;border-bottom:1px solid var(--line)}
+.bar h2{margin-right:auto}
+.cnt{font:600 13px var(--f-body);padding:2px 10px;border-radius:99px;background:var(--sunk);color:var(--muted)}
+.checksline{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center;font-size:13.5px;color:var(--muted);padding:9px 14px;border-bottom:1px solid var(--line-soft)}
+.checksline:empty{display:none}
+.pill{display:inline-block;font:600 13px var(--f-body);border-radius:4px}
+.pill.ok{color:var(--good)}
+.pill.warn{color:var(--warn)}
+.warns{margin:0;padding:10px 14px 10px 32px;display:grid;gap:3px;font-size:14px;border-bottom:1px solid var(--line-soft);background:color-mix(in srgb,var(--warn) 7%,transparent)}
+.warns li::marker{color:var(--warn)}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:640px}
+th{font:600 13px var(--f-body);color:var(--muted);text-align:right;padding:8px 14px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:7px 14px;border-bottom:1px solid var(--line-soft);white-space:nowrap;text-align:right}
+td:first-child,th:first-child{text-align:left;white-space:normal;min-width:190px}
+td:first-child{font-weight:600}
+tbody tr:hover td{background:color-mix(in srgb,var(--sunk) 55%,transparent)}
+tr.low td{background:color-mix(in srgb,var(--bad) 7%,transparent)}
+tr.low td:first-child{box-shadow:inset 3px 0 0 var(--bad)}
 tr.tot td{font-weight:600;border-bottom:0;background:var(--sunk)}
-.pbar{position:relative;width:110px;height:14px;display:inline-block;vertical-align:middle;margin-left:8px}
+.muted{color:var(--muted);font-weight:400}
+td details{font-weight:400;font-size:13px}
+td details summary{cursor:pointer;color:var(--muted)}
+.detail{color:var(--muted);font-size:12.5px;white-space:normal;padding-top:3px}
+.pbar{position:relative;width:96px;height:14px;display:inline-block;vertical-align:middle;margin-left:8px}
 .pbar::before{content:"";position:absolute;left:0;right:0;top:6px;height:2px;background:var(--sunk)}
 .pbar .t{position:absolute;top:2px;width:1px;height:10px;background:var(--line)}
 .pbar .dot{position:absolute;top:2px;width:10px;height:10px;border-radius:50%;margin-left:-5px;background:var(--accent)}
 .pbar .dot.lo{background:var(--bad)}
-details{font-size:13px}
-details summary{cursor:pointer;color:var(--muted)}
-.detail{font-family:var(--f-mono);font-size:12px;color:var(--muted);white-space:normal}
-/* plots */
-.plots{display:grid;align-items:start;grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr));gap:14px}
-figure{margin:0;display:grid;gap:6px;min-width:0}
-figcaption{font-size:12.5px;color:var(--muted)}
-canvas{width:100%;display:block;border-radius:8px;background:var(--screen)}
-.legend{display:flex;flex-wrap:wrap;gap:4px 10px;font:12px var(--f-mono);color:var(--muted)}
-.legend i{display:inline-block;width:12px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
-.pill{display:inline-block;font:500 12px var(--f-mono);padding:2px 8px;border-radius:999px;border:1px solid currentColor}
-.pill.ok{color:var(--good)} .pill.warn{color:var(--warn)}
-.checksline{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:13px;color:var(--muted)}
-.notes{display:grid;gap:10px}
-.notes ul{margin:0;padding-left:20px;display:grid;gap:6px;max-width:90ch}
-.notes summary{cursor:pointer;list-style-position:inside}
-.notes summary h3{display:inline}
-.notes li{font-size:14px}
-.notes code{font-family:var(--f-mono);font-size:12.5px;background:var(--sunk);padding:1px 5px;border-radius:4px}
-.muted{color:var(--muted)}
-.opts summary{cursor:pointer;font-size:13.5px;color:var(--muted)}
-.opts[open] summary{margin-bottom:10px}
-.warns{margin:0;padding:10px 12px 10px 30px;border:1px solid var(--warn);border-radius:8px;display:grid;gap:4px;font-size:13.5px}
-.warns li::marker{color:var(--warn)}
 .st-notfound{color:var(--bad)} .st-skipped{color:var(--warn);text-decoration:line-through}
+/* plots: dark panels, hover/touch readout */
+.plots{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:1px;background:var(--line);border-top:1px solid var(--line)}
+.pf{background:var(--surface);min-width:0;display:flex;flex-direction:column}
+.pf h3{font:600 14px var(--f-body);margin:0;padding:8px 14px;color:var(--muted)}
+.cv{background:var(--screen)}
+.cv canvas{display:block;width:100%;touch-action:none;cursor:crosshair}
+.foot{display:flex;flex-wrap:wrap;gap:4px 16px;justify-content:space-between;align-items:center;padding:8px 14px;background:var(--screen);color:var(--screen-ink);border-top:1px solid rgba(255,255,255,.07);margin-top:auto}
+.readout{font-size:13.5px;min-height:1.4em}
+.legend{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:12.5px;color:var(--screen-dim)}
+.legend i{display:inline-block;width:12px;height:9px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+details.fold>summary{list-style:none;cursor:pointer;user-select:none}
+details.fold>summary::-webkit-details-marker{display:none}
+details.fold>summary:hover h2{color:var(--accent)}
+.chev{width:8px;height:8px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg) translate(-2px,-2px);transition:transform .15s;flex:none}
+details.fold:not([open]) .chev{transform:rotate(-45deg)}
+details.fold:not([open])>summary{border-bottom:0}
+.notes{margin:0;padding:12px 14px 14px 34px;display:grid;gap:7px;max-width:100ch;font-size:14.5px}
+footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);padding-top:10px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px}
+footer a{color:inherit;text-decoration:underline;text-underline-offset:2px}
+footer a:hover{color:var(--ink)}
+
+@media (max-width:1180px){
+  .summary.n3{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+}
+@media (max-width:900px){
+  .bench{grid-template-columns:minmax(0,1fr)}
+  aside{position:static;max-height:none;overflow:visible}
+  .rail-body{overflow:visible}
+  /* Calculate stays reachable while the settings scroll past */
+  .rail-foot{position:sticky;bottom:0;border-radius:0 0 10px 10px;z-index:2;padding-bottom:max(12px,env(safe-area-inset-bottom,0px))}
+  .kv{border-right:0;border-bottom:1px solid var(--line-soft)}
+  .kv:last-child{border-bottom:0}
+}
+@media (max-width:640px){
+  body{font-size:16px}
+  input[type=number],select{font-size:16px}   /* 16 px keeps phone browsers from zooming into a focused field */
+  td,th{padding-inline:10px}
+}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
 <div class="wrap">
+<div class="bench">
+<aside aria-label="Inputs">
   <header>
-    <h1><svg class="logo" viewBox="0 0 48 36" aria-hidden="true"><path d="M15 6c-6 0-10.5 5.4-10.5 12S9 30 15 30h3V6z" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round"/><g stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M23 11l7 3.2"/><path d="M23 17.5l11.5 5.2"/><path d="M23 24l16 7.2"/></g><path d="M41 3.5l1.6 3.3 3.6.5-2.6 2.5.6 3.6-3.2-1.7-3.2 1.7.6-3.6-2.6-2.5 3.6-.5z" fill="currentColor"/></svg>HSPR Headlamp Rater</h1>
+    <div class="brand"><svg class="logo" viewBox="0 0 48 36" aria-hidden="true"><path d="M15 6c-6 0-10.5 5.4-10.5 12S9 30 15 30h3V6z" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round"/><g stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M23 11l7 3.2"/><path d="M23 17.5l11.5 5.2"/><path d="M23 24l16 7.2"/></g><path d="M41 3.5l1.6 3.3 3.6.5-2.6 2.5.6 3.6-3.2-1.7-3.2 1.7.6-3.6-2.6-2.5 3.6-.5z" fill="currentColor"/></svg><h1>HSPR Headlamp Rater</h1></div>
   </header>
-
-  <div id="sampleBanner" class="banner">Sample beams shown. Load your IES files and press Calculate.</div>
-
-  <section class="grid2">
-    <div class="card" id="cardLB">
-      <div class="card-head"><h2>Passing beam</h2></div>
-      <div class="files">
-        <div class="drop" id="dropLB_L"><b>Left lamp IES</b><span>Sample loaded</span><input type="file" id="fLB_L" accept=".ies,.IES,.txt"></div>
-        <div class="drop" id="dropLB_R"><b>Right lamp IES</b><span>Optional</span><input type="file" id="fLB_R" accept=".ies,.IES,.txt"></div>
-      </div>
-      <div class="fields">
-        <label class="f">Mounting height (m)<input type="number" id="hLB" value="0.65" step="0.01" min="0.2" max="2"></label>
-        <label class="f">Lamp separation (m)<input type="number" id="wLB" value="1.40" step="0.01" min="0.2" max="3"></label>
+  <div class="rail-body">
+  <div class="secs">
+    <details class="sec" open>
+      <summary><span class="st">Passing beam</span><span class="sv" id="svLB"></span></summary>
+      <div class="sb">
+        <div class="files">
+          <label class="drop" id="dropLB_L"><b>Left lamp</b><span>Sample loaded</span><input type="file" id="fLB_L" accept=".ies,.IES,.txt"></label>
+          <label class="drop" id="dropLB_R"><b>Right lamp</b><span>Optional</span><input type="file" id="fLB_R" accept=".ies,.IES,.txt"></label>
+        </div>
+        <div class="row2">
+          <label class="f">Mounting height (m)<input type="number" id="hLB" value="0.65" step="0.01" min="0.2" max="2"></label>
+          <label class="f">Lamp separation (m)<input type="number" id="wLB" value="1.40" step="0.01" min="0.2" max="3"></label>
+        </div>
         <label class="f">Vertical aim shift (°)<input type="number" id="aLB" value="0" step="0.01" min="-5" max="5"></label>
+        <label class="chk"><input type="checkbox" id="mLB"> File H axis is reversed <small>(+ = left)</small></label>
       </div>
-      <div class="checks"><label><input type="checkbox" id="mLB"> File H axis is reversed (+ = left)</label></div>
-      <div class="checksline" id="chkLB"></div>
-    </div>
+    </details>
 
-    <div class="card" id="cardHB">
-      <div class="card-head"><h2>Driving beam</h2></div>
-      <div class="files">
-        <div class="drop" id="dropHB_L"><b>Left lamp IES</b><span>Sample loaded</span><input type="file" id="fHB_L" accept=".ies,.IES,.txt"></div>
-        <div class="drop" id="dropHB_R"><b>Right lamp IES</b><span>Optional</span><input type="file" id="fHB_R" accept=".ies,.IES,.txt"></div>
-      </div>
-      <div class="fields">
-        <label class="f">Mounting height (m)<input type="number" id="hHB" value="0.65" step="0.01" min="0.2" max="2"></label>
-        <label class="f">Lamp separation (m)<input type="number" id="wHB" value="1.40" step="0.01" min="0.2" max="3"></label>
+    <details class="sec" open>
+      <summary><span class="st">Driving beam</span><span class="sv" id="svHB"></span></summary>
+      <div class="sb">
+        <div class="files">
+          <label class="drop" id="dropHB_L"><b>Left lamp</b><span>Sample loaded</span><input type="file" id="fHB_L" accept=".ies,.IES,.txt"></label>
+          <label class="drop" id="dropHB_R"><b>Right lamp</b><span>Optional</span><input type="file" id="fHB_R" accept=".ies,.IES,.txt"></label>
+        </div>
+        <div class="row2">
+          <label class="f">Mounting height (m)<input type="number" id="hHB" value="0.65" step="0.01" min="0.2" max="2"></label>
+          <label class="f">Lamp separation (m)<input type="number" id="wHB" value="1.40" step="0.01" min="0.2" max="3"></label>
+        </div>
         <label class="f">Vertical aim shift (°)<input type="number" id="aHB" value="0" step="0.01" min="-5" max="5"></label>
+        <label class="chk"><input type="checkbox" id="mHB"> File H axis is reversed <small>(+ = left)</small></label>
+        <label class="chk"><input type="checkbox" id="addLB"> Passing beam on</label>
       </div>
-      <div class="checks">
-        <label><input type="checkbox" id="mHB"> File H axis is reversed (+ = left)</label>
-        <label><input type="checkbox" id="addLB"> Passing beam on</label>
-      </div>
-      <div class="checksline" id="chkHB"></div>
-    </div>
-  </section>
+    </details>
 
-  <section class="card">
-    <div class="card-head"><h3>System rating</h3></div>
-    <div class="fields">
-      <label class="f">Driving-beam operation
-        <select id="mode"><option value="manual">Manually operated</option><option value="automatic" selected>Automatic (camera on/off)</option><option value="adb">Adaptive driving beam</option></select></label>
-      <label class="f">ADB score (optional)<input type="number" id="adbScore" placeholder="e.g. 3.06" step="0.01" min="0" max="7"></label>
-    </div>
-    <details class="opts">
-      <summary>Calculation options</summary>
-      <div class="fields">
+    <details class="sec" open>
+      <summary><span class="st">System rating</span><span class="sv" id="svSys"></span></summary>
+      <div class="sb">
+        <label class="f">Driving-beam operation
+          <select id="mode"><option value="manual">Manually operated</option><option value="automatic" selected>Automatic (camera on/off)</option><option value="adb">Adaptive driving beam</option></select></label>
+        <label class="f">ADB score (optional)<input type="number" id="adbScore" placeholder="e.g. 3.06" step="0.01" min="0" max="7"></label>
+      </div>
+    </details>
+
+    <details class="sec">
+      <summary><span class="st">Calculation options</span><span class="sv" id="svOpt"></span></summary>
+      <div class="sb">
         <label class="f">Traffic
           <select id="traffic"><option value="RHT" selected>Right-hand traffic</option><option value="LHT">Left-hand traffic</option></select></label>
         <label class="f">IES Type B files
@@ -181,34 +239,40 @@ canvas{width:100%;display:block;border-radius:8px;background:var(--screen)}
           <select id="unmet"><option value="reference" selected>Leave out (as .exe)</option><option value="zero">Count as 0 m</option></select></label>
       </div>
     </details>
-    <div class="bar">
-      <button class="primary" id="run">Calculate rating</button>
-      <button id="copy">Copy results</button>
-      <span class="status" id="status" role="status"></span>
-    </div>
-  </section>
+  </div>
+  </div>
+  <div class="rail-foot">
+    <button class="go" id="run">Calculate rating</button>
+    <p class="msg" id="status" role="status"></p>
+    <div><button class="btn" id="copy">Copy results</button></div>
+  </div>
+</aside>
 
-  <section class="strip" id="strip"></section>
+<main>
+  <p class="hint" id="sampleBanner">Sample beams shown. Load your IES files and press Calculate.</p>
+  <section class="summary" id="strip" aria-label="Scores"></section>
 
-  <section class="card" id="resLB"></section>
-  <section class="card" id="resHB"></section>
+  <section class="screen" id="resLB" hidden></section>
+  <section class="screen" id="resHB" hidden></section>
 
-  <details class="card notes">
-    <summary><h3>Method notes</h3></summary>
-    <ul>
+  <details class="screen fold">
+    <summary class="bar"><span class="chev" aria-hidden="true"></span><h2>Method notes</h2></summary>
+    <ul class="notes">
       <li>Lamps at ±separation/2, mounting height above the road. Vertical illuminance <code>E = I·cos/d²</code>, nearest point of a 0.05° grid (45°L–45°R, 15°D–15°U).</li>
       <li>Zones A/B: 1, 3, 5 lx on the road along 0, 1.5, 3 m R (B turned 5° R). Zone C: 250 mm, 3, 4.5, 6 m L. Zone D: 3 lx width on the road at 30/40/50 m. Zone E: 3 lx width at 250 mm, 10/20 m.</li>
       <li>Points A–E: 3 lx along rays to (0, h), (−20, h), (0, h+9), (+20, h), (0, h−2) at 100 m.</li>
-      <li>Glare: weighted flux into x −7.9…+1.3 m, 0.93…1.62 m at 50 m. Flux: LB 15°D–5°U, HB 5°D–10°U, both 45°L–45°R.</li>
+      <li>Glare: weighted flux into x −7.9…+1.3 m, 0.93…1.62 m at 50 m. Flux: LB 15°D–5°U, HB 5°D–10°U, both 45°L–45°R, summed for the lamp pair.</li>
       <li><code>P = (V − V₁)/(V₂ − V₁) + 1</code>; EP<sub>LB</sub> = 5.80N + 64.17, EP<sub>HB</sub> = 11.71N + 141.27, EP<sub>ADB</sub> = 10.87N + 94.13; score = 0.626·MEP − 36.42. Ranks per GTB Table 18.</li>
       <li>Calculation and rounding as the TU Darmstadt reference software. Differences: Type B converted, Type C supported, candela multiplier applied, unmet lines warned.</li>
     </ul>
   </details>
+</main>
+</div>
 
-  <footer>
-    <span>© 2026 Jalib Akther · <a href="https://github.com/jalibakthermk/HSPRevaluate">HSPRevaluate</a></span>
-    <span>Licensed under <a href="https://www.gnu.org/licenses/gpl-3.0.html">GPL-3.0</a> · Based on the <a href="https://github.com/HSPR-Software/HSPR">HSPR software</a> by TU Darmstadt (GPL-3.0)</span>
-  </footer>
+<footer>
+  <span>© 2026 Jalib Akther · <a href="https://github.com/jalibakthermk/HSPRevaluate">HSPRevaluate</a></span>
+  <span>Licensed under <a href="https://www.gnu.org/licenses/gpl-3.0.html">GPL-3.0</a> · Based on the <a href="https://github.com/HSPR-Software/HSPR">HSPR software</a> by TU Darmstadt (GPL-3.0)</span>
+</footer>
 </div>
 
 <script>
@@ -671,7 +735,7 @@ function wireDrop(key){
         span.textContent = `${file.name} · Type ${ies.typeName} · ${ies.V.length}×${ies.H.length}`;
         box.classList.add("has");
         if (key.endsWith("_L")){ state.sample = false; ["LB_L","HB_L"].forEach(k => { if (!texts[k]) $("drop" + k).querySelector("span").textContent = "No file loaded"; }); }
-        setStatus(`Loaded ${file.name}. Press Calculate rating.`);
+        updateSv(); run();
       } catch (e) { setStatus(`${file.name}: ${e.message}`, true); }
     };
     rd.readAsText(file);
@@ -679,6 +743,15 @@ function wireDrop(key){
 }
 ["LB_L","LB_R","HB_L","HB_R"].forEach(wireDrop);
 function setStatus(msg, err){ const s = $("status"); s.textContent = msg; s.classList.toggle("err", !!err); }
+const short = n => n && n.length > 22 ? n.slice(0, 10) + "…" + n.slice(-9) : n;
+function updateSv(){
+  const f = id => { const v = parseFloat($(id).value); return isFinite(v) ? v : "–"; };
+  const nm = (a, b) => state.names[a] ? short(state.names[a]) + (state.names[b] ? " + 1" : "") : (state.sample ? "sample" : "no file");
+  $("svLB").textContent = `${nm("LB_L", "LB_R")} · ${f("hLB")} m · ${f("wLB")} m`;
+  $("svHB").textContent = `${nm("HB_L", "HB_R")} · ${f("hHB")} m · ${f("wHB")} m`;
+  $("svSys").textContent = $("mode").selectedOptions[0].text.split(" (")[0];
+  $("svOpt").textContent = $("traffic").value;
+}
 
 // ---------- diagnostics ----------
 function cutoffAt(g, h){ // steepest intensity drop in V between -3 and +2 at given H
@@ -713,8 +786,10 @@ function shiftGrid(g, mirror, aim){
   return { data: d, notes: [] };
 }
 
+let userRun = false;
 function run(){
-  $("run").disabled = true; setStatus("Calculating…");
+  const toResults = userRun;
+  $("run").disabled = true; $("run").classList.remove("stale"); setStatus("Calculating…"); updateSv();
   setTimeout(() => {
     try {
       const lbL = grid("LB_L", "LB", $("mLB").checked, num("aLB", 0));
@@ -743,20 +818,24 @@ function run(){
       $("sampleBanner").hidden = !state.sample || !!(texts.LB_L || texts.HB_L);
       render(out);
       setStatus(`Done${state.sample && !(texts.LB_L||texts.HB_L) ? " (sample beams)" : ""}.`);
+      if (toResults && matchMedia("(max-width:900px)").matches) $("strip").scrollIntoView({ behavior: "smooth", block: "start" });
     } catch (e) { setStatus(e.message, true); }
     $("run").disabled = false;
   }, 30);
 }
-$("run").addEventListener("click", run);
-["mode","adbScore"].forEach(id => $(id).addEventListener("input", () => state.results && renderStrip(state.results)));
+$("run").addEventListener("click", () => { userRun = true; run(); userRun = false; });
+["mode","adbScore"].forEach(id => $(id).addEventListener("input", () => { updateSv(); state.results && renderStrip(state.results); }));
+// other edits make the shown results stale; Enter in a field recalculates
+const aside = document.querySelector("aside");
+aside.addEventListener("change", ev => { if (ev.target.type === "file" || ev.target.id === "mode" || ev.target.id === "adbScore") return;
+  updateSv(); if (state.results){ $("run").classList.add("stale"); setStatus("Inputs changed. Press Calculate."); } });
+aside.addEventListener("keydown", ev => { if (ev.key === "Enter" && ev.target.type === "number"){ ev.preventDefault(); ev.target.blur(); run(); } });
 
 // ---------- rendering ----------
 function ladder(idx){ return `<div class="ladder" aria-hidden="true">${[0,1,2,3,4,5].map(i => `<i class="${i <= idx ? "on" : ""}"></i>`).join("")}</div>`; }
 function renderStrip(out){
-  const cards = [];
-  const beam = (t, r) => `<div class="score"><div class="eyebrow">${t}</div><div class="num">${fmt(r.score, 2)} <small>/ 5</small></div><span class="rank">${r.rank}</span>${ladder(H.RANKS.indexOf(r.rank))}<div class="sub">weighted sum ${fmt(r.sum, 2)}</div></div>`;
-  if (out.lb) cards.push(beam("Passing beam", out.lb));
-  if (out.hb) cards.push(beam("Driving beam", out.hb));
+  const cells = [];
+  const beam = (t, r) => `<div class="kv"><b>${t}</b><span>${fmt(r.score, 2)} <small>/ 5</small></span><span class="rank">${r.rank}</span>${ladder(H.RANKS.indexOf(r.rank))}<em>weighted sum ${fmt(r.sum, 2)}</em></div>`;
   if (out.lb && out.hb){
     const adb = parseFloat($("adbScore").value), mode = $("mode").value;
     const sys = H.system({ lb: out.lb.score, hb: out.hb.score, adb: isFinite(adb) ? adb : null });
@@ -764,12 +843,12 @@ function renderStrip(out){
     if (m){
       const label = { manual: "manual", automatic: "automatic", adb: "ADB" }[mode];
       const others = Object.keys(sys.modes).filter(k => k !== mode).map(k => `${k} ${fmt(sys.modes[k].score, 1)}`).join(" · ");
-      cards.push(`<div class="score sys"><div class="eyebrow">System score · ${label}</div><div class="num">${fmt(m.score, 1)} <small>pts</small></div><span class="rank">${m.rank}</span>${ladder(H.RANKS.indexOf(m.rank))}<div class="sub">MEP ${fmt(m.MEP, 1)} m · EP LB ${fmt(sys.EP.LB, 1)} m · EP HB ${fmt(sys.EP.HB, 1)} m${sys.EP.ADB ? ` · EP ADB ${fmt(sys.EP.ADB, 1)} m` : ""}</div>${others ? `<div class="sub">other modes: ${others}</div>` : ""}</div>`);
-    } else {
-      cards.push(`<div class="score sys"><div class="eyebrow">System score · ADB</div><div class="sub">Enter an ADB score.</div></div>`);
-    }
-  } else cards.push(`<div class="score sys"><div class="eyebrow">System score</div><div class="sub">Needs both beams.</div></div>`);
-  $("strip").innerHTML = cards.join("");
+      cells.push(`<div class="kv verdict"><b>System score · ${label}</b><span>${fmt(m.score, 1)} <small>pts</small></span><span class="rank">${m.rank}</span>${ladder(H.RANKS.indexOf(m.rank))}<em>MEP ${fmt(m.MEP, 1)} m · EP LB ${fmt(sys.EP.LB, 1)} m · EP HB ${fmt(sys.EP.HB, 1)} m${sys.EP.ADB ? ` · EP ADB ${fmt(sys.EP.ADB, 1)} m` : ""}</em>${others ? `<em>other modes: ${others}</em>` : ""}</div>`);
+    } else cells.push(`<div class="kv verdict"><b>System score · ADB</b><em>Enter an ADB score.</em></div>`);
+  } else cells.push(`<div class="kv verdict"><b>System score</b><em>Needs both beams.</em></div>`);
+  if (out.lb) cells.push(beam("Passing beam", out.lb));
+  if (out.hb) cells.push(beam("Driving beam", out.hb));
+  const el = $("strip"); el.className = "summary n" + cells.length; el.innerHTML = cells.join("");
 }
 function pbar(P){
   const x = p => Math.max(0, Math.min(100, p / 3 * 100));
@@ -781,24 +860,37 @@ function detailText(r){
   return r.detail.map(d => d.lux != null ? `${d.lux} lx @ ${d.line > 0 ? d.line + " m R" : d.line < 0 ? (-d.line) + " m L" : "0 m"}: ${st(d)}` : `@ ${d.dist} m: ${st(d)}`).join(" · ");
 }
 function table(res){
-  const rows = res.rows.map(r => `<tr><td>${r.name}${r.detail ? `<details><summary>line values</summary><div class="detail">${detailText(r)}</div></details>` : ""}</td>
+  const rows = res.rows.map(r => `<tr class="${r.points < 1 ? "low" : ""}"><td>${r.name}${r.detail ? `<details><summary>line values</summary><div class="detail">${detailText(r)}</div></details>` : ""}</td>
     <td class="v">${fmt(r.value, r.unit === "lm" && r.value < 10 ? 3 : 1)} <span class="muted">${r.unit}</span></td>
     <td>${r.p1}</td><td>${r.p2}</td><td>${fmt(r.points, 2)}${pbar(r.points)}</td><td>${r.w}</td><td>${fmt(r.weighted, 2)}</td></tr>`).join("");
   return `<div class="tbl"><table><thead><tr><th>Criterion</th><th>Value</th><th>1 pt</th><th>2 pt</th><th>Points</th><th>Weight</th><th>Weighted</th></tr></thead><tbody>${rows}
     <tr class="tot"><td>Weighted sum → score</td><td></td><td></td><td></td><td></td><td></td><td>${fmt(res.sum, 2)} → ${fmt(res.score, 2)}</td></tr></tbody></table></div>`;
+}
+const READ0 = "Hover or touch the plot to read values";
+function probeWire(cv, rd){
+  const f = ev => { const r = cv.getBoundingClientRect(); rd.textContent = (cv._probe && cv._probe(ev.clientX - r.left, ev.clientY - r.top)) || READ0; };
+  cv.addEventListener("pointermove", f); cv.addEventListener("pointerdown", f);
+  cv.addEventListener("pointerleave", () => { rd.textContent = READ0; });
 }
 function renderBeam(id, title, res, g, lamps, kind){
   const el = $(id);
   if (!res){ el.hidden = true; return; }
   el.hidden = false;
   const esc = t => t.replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
-  const warns = res.warnings && res.warnings.length ? `<ul class="warns">${res.warnings.map(w => `<li>${esc(w)}</li>`).join("")}</ul>` : "";
-  el.innerHTML = `<div class="card-head"><h2>${title}</h2><span class="rank">${fmt(res.score, 2)} · ${res.rank}</span></div>${warns}${table(res)}
+  const nw = res.warnings ? res.warnings.length : 0;
+  const warns = nw ? `<ul class="warns">${res.warnings.map(w => `<li>${esc(w)}</li>`).join("")}</ul>` : "";
+  const low = res.rows.filter(r => r.points < 1).length;
+  const chk = kind === "LB" ? "chkLB" : "chkHB";
+  el.innerHTML = `<div class="bar"><h2>${title}</h2>${low ? `<span class="cnt">${low} below 1 pt</span>` : ""}<span class="rank">${fmt(res.score, 2)} · ${res.rank}</span></div>
+    <div class="checksline" id="${chk}"></div>${warns}${table(res)}
     <div class="plots">
-      <figure><canvas id="${id}_fv" height="220"></canvas><figcaption>Left lamp, cd</figcaption><div class="legend" id="${id}_fvl"></div></figure>
-      <figure><canvas id="${id}_tv" height="420"></canvas><figcaption>${kind === "LB" ? "Road surface, lx" : "250 mm plane, lx"}</figcaption><div class="legend" id="${id}_tvl"></div></figure>
+      <figure class="pf" style="margin:0"><h3>Left lamp, cd</h3><div class="cv"><canvas id="${id}_fv" height="230"></canvas></div><div class="foot"><div class="readout" id="${id}_fvr">${READ0}</div><div class="legend" id="${id}_fvl"></div></div></figure>
+      <figure class="pf" style="margin:0"><h3>${kind === "LB" ? "Road surface, lx" : "250 mm plane, lx"}</h3><div class="cv"><canvas id="${id}_tv" height="230"></canvas></div><div class="foot"><div class="readout" id="${id}_tvr">${READ0}</div><div class="legend" id="${id}_tvl"></div></div></figure>
     </div>`;
-  requestAnimationFrame(() => { drawFront($(id + "_fv"), g, $(id + "_fvl")); drawTop($(id + "_tv"), lamps, kind, res, $(id + "_tvl")); });
+  requestAnimationFrame(() => {
+    drawFront($(id + "_fv"), g, $(id + "_fvl")); drawTop($(id + "_tv"), lamps, kind, res, $(id + "_tvl"));
+    probeWire($(id + "_fv"), $(id + "_fvr")); probeWire($(id + "_tv"), $(id + "_tvr"));
+  });
 }
 function render(out){
   renderStrip(out);
@@ -812,11 +904,11 @@ function render(out){
     const kinkTxt = rightKink ? "kink on the right (right-hand traffic beam)" : leftKink ? "kink on the left (left-hand traffic beam)" : "no clear kink";
     const fix = out.lht ? "For a left-hand-traffic beam the kink should be on the left. Check the H axis direction or the Traffic option." : "For a right-hand-traffic beam the kink should be on the right. Check the H axis direction or the Traffic option.";
     $("chkLB").innerHTML = `<span class="pill ${ok ? "ok" : "warn"}">${kinkTxt}</span><span>cut-off at ${Math.abs(flat)}°${flat < 0 ? "L" : "R"} ≈ ${c == null ? "–" : c.toFixed(2) + "°"}</span><span>peak ${Math.round(p.I).toLocaleString()} cd at ${p.h.toFixed(1)}°, ${p.v.toFixed(1)}°</span>` + (ok ? "" : `<span>${fix}</span>`);
-  } else $("chkLB").innerHTML = "";
+  } else if ($("chkLB")) $("chkLB").innerHTML = "";
   if (out.hbG){
     const p = peak(out.hbG);
     $("chkHB").innerHTML = `<span>peak ${Math.round(p.I).toLocaleString()} cd at ${p.h.toFixed(1)}°, ${p.v.toFixed(1)}°</span>` + (Math.abs(p.h) > 3 || Math.abs(p.v) > 2 ? `<span class="pill warn">peak far from H-V, check aim</span>` : "");
-  } else $("chkHB").innerHTML = "";
+  } else if ($("chkHB")) $("chkHB").innerHTML = "";
 }
 
 // colour ramp for plots (screen surfaces stay dark in both themes)
@@ -851,6 +943,9 @@ function drawFront(cv, g, lg){
   c.textAlign = "center"; [-30,-20,-10,0,10,20,30].forEach(t => c.fillText((t < 0 ? -t + "L" : t > 0 ? t + "R" : "0"), X(t), h - 6));
   c.textAlign = "right"; [-8,-4,0,4].forEach(t => c.fillText(t + "°", pad.l - 4, Y(t) + 4));
   legend(lg, levels, "cd");
+  cv._probe = (px, py) => { const hh = hmin + (px - pad.l) / pw * (hmax - hmin), v = vmax - (py - pad.t) / ph * (vmax - vmin);
+    if (hh < hmin || hh > hmax || v < vmin || v > vmax) return null;
+    return `${Math.round(H.Inear(g, hh, v)).toLocaleString()} cd at ${Math.abs(hh).toFixed(1)}°${hh < 0 ? "L" : "R"}, ${v.toFixed(1)}°`; };
 }
 function drawTop(cv, lamps, kind, res, lg){
   const { c, w, h } = setup(cv), xmin = -20, xmax = 20, zmax = kind === "LB" ? 160 : 260, y0 = kind === "LB" ? 0 : 0.25;
@@ -894,6 +989,9 @@ function drawTop(cv, lamps, kind, res, lg){
   c.textAlign = "right"; for (let z = 0; z <= zmax; z += kind === "LB" ? 40 : 50) c.fillText(z + "", pad.l - 4, Z(z) + 4);
   c.save(); c.translate(10, pad.t + ph / 2); c.rotate(-Math.PI / 2); c.textAlign = "center"; c.fillText("distance (m)", 0, 0); c.restore();
   legend(lg, levels, "lx");
+  cv._probe = (px, py) => { const x = xmin + (px - pad.l) / pw * (xmax - xmin), z = (1 - (py - pad.t) / ph) * zmax;
+    if (x < xmin || x > xmax || z < 0.5 || z > zmax) return null;
+    const E = H.Ev(lamps, x, y0, z); return `${E < 10 ? E.toFixed(2) : E.toFixed(1)} lx at ${Math.abs(x).toFixed(1)} m ${x < 0 ? "L" : "R"}, ${z.toFixed(0)} m ahead`; };
 }
 let rz; window.addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => state.results && render(state.results), 200); });
 
@@ -911,6 +1009,7 @@ $("copy").addEventListener("click", () => {
   function fallback(){ const ta = document.createElement("textarea"); ta.value = txt; document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); done(); } catch (e) { setStatus("Copy blocked; select the table instead.", true); } ta.remove(); }
 });
 
+updateSv();
 run();
 })();
 </script>
