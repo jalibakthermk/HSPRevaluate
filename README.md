@@ -13,7 +13,7 @@ Outputs:
 
 ## Use it
 
-Open `index.html` in any modern browser. It is one self-contained file, so it also works offline (fonts fall back to system fonts) and on GitHub Pages.
+Open `index.html` in any modern browser, or use the live page on GitHub Pages. All the calculation code is inside the one file. The look comes from the shared [beamKit](https://jalibakthermk.github.io/beamkit/demo.html) framework, loaded from the portfolio site; offline the page still works, with plain fallback styling.
 
 **Privacy:** IES files are read with the browser's `FileReader` and processed in memory on your machine. The page sends none of your data over the network and stores nothing.
 

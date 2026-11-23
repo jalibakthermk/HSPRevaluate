@@ -4,65 +4,64 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>HSPR Headlamp Rater</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 48 36%22%3E%3Cpath d=%22M15 6c-6 0-10.5 5.4-10.5 12S9 30 15 30h3V6z%22 fill=%22none%22 stroke=%22%23b86a00%22 stroke-width=%222.6%22 stroke-linejoin=%22round%22/%3E%3Cg stroke=%22%23b86a00%22 stroke-width=%222.6%22 stroke-linecap=%22round%22%3E%3Cpath d=%22M23 11l7 3.2%22/%3E%3Cpath d=%22M23 17.5l11.5 5.2%22/%3E%3Cpath d=%22M23 24l16 7.2%22/%3E%3C/g%3E%3Cpath d=%22M41 3.5l1.6 3.3 3.6.5-2.6 2.5.6 3.6-3.2-1.7-3.2 1.7.6-3.6-2.6-2.5 3.6-.5z%22 fill=%22%23b86a00%22/%3E%3C/svg%3E">
+<meta name="description" content="HSPRevaluate: Headlight Safety Performance Rating (GTB HSPR) of passing and driving beams from IES files, in the browser.">
+<meta name="theme-color" content="#0a0f2c">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Semi+Condensed:wght@600;700&family=Source+Sans+3:wght@400;600&display=swap">
+<!-- beamKit: shared design framework for the lighting tools (https://jalibakthermk.github.io/beamkit/) -->
+<link rel="stylesheet" href="https://jalibakthermk.github.io/beamkit/beamkit.css">
+<script>try{var t=localStorage.getItem('theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+<script src="https://jalibakthermk.github.io/beamkit/beamkit.js" defer></script>
 <style>
 /* Bench layout: a control rail that stays in view with the Calculate action pinned to its foot; results on the right
    read top-down as scores, criterion tables and plots. Dark panels are the photometric plots only. */
+/* HSPRevaluate colour names mapped onto the shared beamKit tokens (light and dark come from beamkit.css).
+   Fallback values keep the page usable if beamkit.css cannot load (e.g. offline). */
 :root{
-  --bg:#f3f5f6; --surface:#ffffff; --sunk:#e9edf0; --ink:#15212b; --muted:#55656f; --line:#d5dce1; --line-soft:#e6ebee;
-  --accent:#9a5600; --accent-ink:#ffffff; --accent-soft:#f7e9d3;
-  --good:#1f7a45; --warn:#a15c00; --bad:#c0332a;
+  --bg:var(--cds-background,#f2f4f8); --surface:var(--cds-layer-01,#fff); --sunk:var(--cds-layer-02,#e8ebf1);
+  --ink:var(--cds-text-primary,#161616); --muted:var(--cds-text-secondary,#525a66);
+  --line:var(--cds-border-subtle,#d5d9e0); --line-soft:var(--cds-grid,#e4e7ec);
+  --accent:var(--cds-button-primary,#0f62fe); --accent-ink:#ffffff; --accent-soft:var(--cds-info-bg,#edf5ff);
+  --good:var(--cds-ok-text,#0e6027); --warn:var(--cds-warn-text,#8e6a00); --bad:var(--cds-bad,#da1e28);
   --screen:#0d151d; --screen-ink:#c7d4de; --screen-dim:#8494a1;
-  --f-display:"Saira Semi Condensed","Arial Narrow",sans-serif;
-  --f-body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
-  --f-mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  --f-display:var(--font-display,"Arial Narrow",sans-serif);
+  --f-body:var(--font-body,"Segoe UI",system-ui,sans-serif);
+  --f-mono:var(--font-mono,ui-monospace,monospace);
 }
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#0b1117; --surface:#121b23; --sunk:#0c141b; --ink:#e3e9ee; --muted:#93a3af; --line:#25343f; --line-soft:#1b2832;
-  --accent:#f0a43a; --accent-ink:#1b1206; --accent-soft:#33260f;
-  --good:#4cc27a; --warn:#f0a43a; --bad:#ff6b5d; color-scheme:dark;}}
-:root[data-theme="dark"]{
-  --bg:#0b1117; --surface:#121b23; --sunk:#0c141b; --ink:#e3e9ee; --muted:#93a3af; --line:#25343f; --line-soft:#1b2832;
-  --accent:#f0a43a; --accent-ink:#1b1206; --accent-soft:#33260f;
-  --good:#4cc27a; --warn:#f0a43a; --bad:#ff6b5d; color-scheme:dark;}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
-body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;font-variant-numeric:tabular-nums;margin:0;
-  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:12px 40px}
-.wrap{max-width:1440px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
-header{padding:12px 14px;border-bottom:1px solid var(--line)}
-h1{font-family:var(--f-display);font-weight:700;font-size:22px;letter-spacing:.01em;margin:0;line-height:1}
-h2{font:600 18px var(--f-display);margin:0;letter-spacing:.01em}
-.brand{display:flex;align-items:center;gap:10px}
-.logo{width:38px;height:28px;flex:none;color:var(--accent)}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.45;font-variant-numeric:tabular-nums;margin:0}
+.wrap.app{max-width:var(--page-max,1584px);margin:0 auto;display:flex;flex-direction:column;gap:16px;
+  padding:16px max(16px,env(safe-area-inset-right,0px)) 0 max(16px,env(safe-area-inset-left,0px))}
+h2{font:600 17px var(--f-display);margin:0;letter-spacing:.01em}
 .bench{display:grid;grid-template-columns:372px minmax(0,1fr);gap:20px;align-items:start}
 
 /* ---- control rail ---- */
-aside{background:var(--surface);border:1px solid var(--line);border-radius:10px;min-width:0;display:flex;flex-direction:column;
-  position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:hidden}
+aside{background:var(--surface);border:1px solid var(--line);min-width:0;display:flex;flex-direction:column;
+  position:sticky;top:64px;max-height:calc(100vh - 80px);overflow:hidden}
 .rail-body{overflow-y:auto;overscroll-behavior:contain;padding:6px 14px 6px;min-height:0}
 .rail-foot{border-top:1px solid var(--line);padding:12px 14px;display:flex;flex-direction:column;gap:8px;background:var(--surface)}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 label.f{display:flex;flex-direction:column;gap:4px;font-size:13.5px;color:var(--muted);min-width:0}
-input[type=number],select{font:15px var(--f-body);font-variant-numeric:tabular-nums;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:5px;padding:7px 9px;width:100%;min-width:0}
-input:hover,select:hover{border-color:var(--muted)}
+input[type=number],select{font:14px var(--f-body);font-variant-numeric:tabular-nums;color:var(--ink);background:var(--sunk);border:0;border-bottom:1px solid var(--cds-border-strong,#8d8d8d);border-radius:0;padding:0 9px;height:36px;width:100%;min-width:0}
+input[type=number]{font-family:var(--f-mono);font-size:13px}
+input:hover,select:hover{background:var(--cds-layer-hover-01,#f7f9fc)}
+input:focus,select:focus{outline:2px solid var(--cds-focus,#0f62fe);outline-offset:-2px}
 input::placeholder{color:var(--muted);opacity:.8}
 input:focus-visible,select:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
-code{font:12px var(--f-mono);background:var(--sunk);padding:0 3px;border-radius:3px}
-.btn{font:600 14px var(--f-body);border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:5px;padding:7px 12px;cursor:pointer}
-.btn:hover{border-color:var(--muted)}
-.go{font:700 17px var(--f-display);letter-spacing:.02em;background:var(--accent);color:var(--accent-ink);border:0;border-radius:7px;padding:11px;cursor:pointer;width:100%}
-.go:hover{filter:brightness(1.08)}
+code{font:12px var(--f-mono);background:var(--sunk);padding:0 3px;border-radius:0}
+.go{display:inline-flex;align-items:center;justify-content:center;gap:8px;font:600 16px var(--f-display);letter-spacing:.01em;min-height:48px;background:var(--accent);color:var(--accent-ink);border:0;border-radius:0;padding:11px;cursor:pointer;width:100%}
+.go:hover{background:var(--cds-button-primary-hover,#0353e9)}
+.go:active{background:var(--cds-button-primary-active,#002d9c)}
 .go:disabled{opacity:.6;cursor:progress;filter:none}
-.go.stale{box-shadow:0 0 0 3px var(--accent-soft),0 0 0 4px var(--accent)}
+.go.stale{box-shadow:inset 0 0 0 2px var(--accent),inset 0 0 0 3px #fff}
 .msg{font-size:13.5px;color:var(--muted);margin:0;max-height:5.9em;overflow-y:auto}
 .msg:empty{display:none}
 .msg.err{color:var(--bad);font-weight:600}
 .files{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.drop{position:relative;display:flex;flex-direction:column;gap:2px;border:1.5px dashed var(--line);border-radius:7px;padding:10px 10px;cursor:pointer;background:var(--sunk);min-width:0}
+.drop{position:relative;display:flex;flex-direction:column;gap:2px;border:1.5px dashed var(--line);border-radius:0;padding:10px 10px;cursor:pointer;background:var(--sunk);min-width:0}
 .drop:hover,.drop.over{border-color:var(--accent);background:var(--accent-soft)}
 .drop.has{border-style:solid;border-color:var(--accent);background:var(--surface)}
 .drop:focus-within{outline:2px solid var(--accent);outline-offset:1px}
@@ -80,6 +79,7 @@ details.sec:last-child{border-bottom:0}
 details.sec>summary{list-style:none;display:flex;align-items:baseline;gap:10px;padding:12px 2px 12px 18px;cursor:pointer;position:relative;user-select:none}
 details.sec>summary::-webkit-details-marker{display:none}
 details.sec>summary::before{content:"";position:absolute;left:3px;top:50%;width:6px;height:6px;border-right:1.5px solid var(--muted);border-bottom:1.5px solid var(--muted);transform:translateY(-70%) rotate(-45deg);transition:transform .15s}
+.st{font-family:var(--f-display);text-transform:uppercase;letter-spacing:.06em;font-size:13px!important;color:var(--muted)}
 details.sec[open]>summary::before{transform:translateY(-85%) rotate(45deg)}
 details.sec>summary:hover .st{color:var(--accent)}
 .st{font-weight:600;font-size:15px;flex:none}
@@ -89,29 +89,29 @@ details.sec[open] .sv{visibility:hidden}
 
 /* ---- results ---- */
 main{display:flex;flex-direction:column;gap:20px;min-width:0}
-.hint{font-size:13.5px;color:var(--muted);margin:0;padding:9px 14px;border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:6px;background:var(--surface)}
-.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.hint{font-size:13px;color:var(--ink);margin:0;padding:10px 14px;border-left:3px solid var(--accent);background:var(--accent-soft)}
+.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));background:var(--surface);border:1px solid var(--line);border-radius:0;overflow:hidden}
 .summary.n3{grid-template-columns:1.5fr 1fr 1fr}
 .kv{padding:12px 16px 14px;min-width:0;border-right:1px solid var(--line-soft);display:flex;flex-direction:column;gap:4px}
 .kv:last-child{border-right:0}
-.kv b{font:400 13px var(--f-body);color:var(--muted)}
-.kv>span:not(.rank){font:600 26px/1.1 var(--f-display);white-space:nowrap}
+.kv b{font:400 11.5px var(--f-body);color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.kv>span:not(.rank){font:600 26px/1.1 var(--f-display);white-space:nowrap;font-variant-numeric:tabular-nums}
 .kv>span small{font-size:15px;color:var(--muted);font-weight:600}
 .kv em{font-style:normal;font-size:12.5px;color:var(--muted);line-height:1.35}
 .kv.verdict{position:relative;padding-left:21px}
 .kv.verdict::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--accent)}
 .kv.verdict>span:not(.rank){font-size:32px}
-.rank{align-self:flex-start;font:600 13px var(--f-body);letter-spacing:.02em;padding:2px 10px;border-radius:99px;background:var(--accent-soft);color:var(--ink);border:1px solid var(--accent)}
+.rank{align-self:flex-start;font:500 12px var(--f-body);padding:2px 10px;border-radius:12px;background:var(--accent-soft);color:var(--cds-info-text,#0043ce)}
 .ladder{display:grid;grid-template-columns:repeat(6,1fr);gap:3px}
-.ladder i{height:6px;border-radius:2px;background:var(--sunk)}
+.ladder i{height:6px;border-radius:0;background:var(--sunk)}
 .ladder i.on{background:var(--accent)}
-.screen{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden;min-width:0}
+.screen{background:var(--surface);border:1px solid var(--line);border-radius:0;overflow:hidden;min-width:0}
 .bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:10px 14px;border-bottom:1px solid var(--line)}
 .bar h2{margin-right:auto}
 .cnt{font:600 13px var(--f-body);padding:2px 10px;border-radius:99px;background:var(--sunk);color:var(--muted)}
 .checksline{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center;font-size:13.5px;color:var(--muted);padding:9px 14px;border-bottom:1px solid var(--line-soft)}
 .checksline:empty{display:none}
-.pill{display:inline-block;font:600 13px var(--f-body);border-radius:4px}
+.pill{display:inline-block;font:600 13px var(--f-body);border-radius:0}
 .pill.ok{color:var(--good)}
 .pill.warn{color:var(--warn)}
 .warns{margin:0;padding:10px 14px 10px 32px;display:grid;gap:3px;font-size:14px;border-bottom:1px solid var(--line-soft);background:color-mix(in srgb,var(--warn) 7%,transparent)}
@@ -145,7 +145,7 @@ td details summary{cursor:pointer;color:var(--muted)}
 .foot{display:flex;flex-wrap:wrap;gap:4px 16px;justify-content:space-between;align-items:center;padding:8px 14px;background:var(--screen);color:var(--screen-ink);border-top:1px solid rgba(255,255,255,.07);margin-top:auto}
 .readout{font-size:13.5px;min-height:1.4em}
 .legend{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:12.5px;color:var(--screen-dim)}
-.legend i{display:inline-block;width:12px;height:9px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+.legend i{display:inline-block;width:12px;height:9px;border-radius:0;margin-right:4px;vertical-align:-1px}
 details.fold>summary{list-style:none;cursor:pointer;user-select:none}
 details.fold>summary::-webkit-details-marker{display:none}
 details.fold>summary:hover h2{color:var(--accent)}
@@ -153,9 +153,6 @@ details.fold>summary:hover h2{color:var(--accent)}
 details.fold:not([open]) .chev{transform:rotate(-45deg)}
 details.fold:not([open])>summary{border-bottom:0}
 .notes{margin:0;padding:12px 14px 14px 34px;display:grid;gap:7px;max-width:100ch;font-size:14.5px}
-footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);padding-top:10px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px}
-footer a{color:inherit;text-decoration:underline;text-underline-offset:2px}
-footer a:hover{color:var(--ink)}
 
 @media (max-width:1180px){
   .summary.n3{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
@@ -165,7 +162,7 @@ footer a:hover{color:var(--ink)}
   aside{position:static;max-height:none;overflow:visible}
   .rail-body{overflow:visible}
   /* Calculate stays reachable while the settings scroll past */
-  .rail-foot{position:sticky;bottom:0;border-radius:0 0 10px 10px;z-index:2;padding-bottom:max(12px,env(safe-area-inset-bottom,0px))}
+  .rail-foot{position:sticky;bottom:0;z-index:2;padding-bottom:max(12px,env(safe-area-inset-bottom,0px))}
   .kv{border-right:0;border-bottom:1px solid var(--line-soft)}
   .kv:last-child{border-bottom:0}
 }
@@ -175,15 +172,49 @@ footer a:hover{color:var(--ink)}
   td,th{padding-inline:10px}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* ---------- beamKit integration: keep HSPRevaluate's own layouts where class names overlap ---------- */
+.drop{margin:0}
+.legend{margin:0}
+.foot{padding-bottom:8px}
+details.fold[open] .chev{transform:rotate(45deg) translate(-2px,-2px)}
+details.fold:not([open]) .chev{transform:rotate(-45deg)}
+.rail-foot .btn{width:100%}
+.cnt{border-radius:12px}
+footer.bk a{color:var(--cds-link-primary)}
 </style>
 </head>
 <body>
-<div class="wrap">
+<a class="skip" href="#strip">Skip to results</a>
+<div class="shell">
+  <div class="wrap">
+    <a class="shell-name" href="https://jalibakthermk.github.io/"><img src="favicon.svg" alt="" width="24" height="24"> HSPRevaluate <span class="crumb">· Jalib Akther</span></a>
+    <div class="shell-actions">
+      <a href="https://jalibakthermk.github.io/" title="All projects"><svg class="i"><use href="#icon-grid"/></svg> <span class="lbl">Projects</span></a>
+      <a href="https://github.com/jalibakthermk/HSPRevaluate" title="Source code"><svg class="i"><use href="#icon-github"/></svg> <span class="lbl">Code</span></a>
+      <button type="button" data-bk-theme aria-label="Toggle light and dark theme" title="Toggle light / dark">
+        <svg class="i sun"><use href="#icon-sun"/></svg><svg class="i moon"><use href="#icon-moon"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<header class="titleband">
+  <svg class="motif" viewBox="0 0 640 200" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+    <ellipse cx="420" cy="140" rx="210" ry="56"/><ellipse cx="420" cy="140" rx="150" ry="40"/><ellipse cx="420" cy="140" rx="92" ry="25"/><ellipse cx="420" cy="140" rx="44" ry="12"/>
+    <path class="cut" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" d="M0 140H330L366 104H640"/>
+  </svg>
+  <div class="wrap">
+    <p class="eyebrow">Headlamps · rating · GTB HSPR (SEP2023) / CIE S 021</p>
+    <h1><b>HSPRevaluate</b> Headlight safety performance rating <span class="ver">GTB SEP2023</span></h1>
+    <p class="sub">Rates the passing beam and driving beam from IES files: every criterion with its points, the 1–5 function scores, EP / MEP and the headlighting system score.</p>
+    <span class="privacy"><svg class="i"><use href="#icon-lock"/></svg> Files are processed locally in your browser — nothing is uploaded.</span>
+  </div>
+</header>
+
+<div class="wrap app">
 <div class="bench">
 <aside aria-label="Inputs">
-  <header>
-    <div class="brand"><svg class="logo" viewBox="0 0 48 36" aria-hidden="true"><path d="M15 6c-6 0-10.5 5.4-10.5 12S9 30 15 30h3V6z" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round"/><g stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M23 11l7 3.2"/><path d="M23 17.5l11.5 5.2"/><path d="M23 24l16 7.2"/></g><path d="M41 3.5l1.6 3.3 3.6.5-2.6 2.5.6 3.6-3.2-1.7-3.2 1.7.6-3.6-2.6-2.5 3.6-.5z" fill="currentColor"/></svg><h1>HSPR Headlamp Rater</h1></div>
-  </header>
   <div class="rail-body">
   <div class="secs">
     <details class="sec" open>
@@ -242,9 +273,9 @@ footer a:hover{color:var(--ink)}
   </div>
   </div>
   <div class="rail-foot">
-    <button class="go" id="run">Calculate rating</button>
+    <button class="go" id="run"><svg class="i" aria-hidden="true"><use href="#icon-play"/></svg> Calculate rating</button>
     <p class="msg" id="status" role="status"></p>
-    <div><button class="btn" id="copy">Copy results</button></div>
+    <div><button class="btn" id="copy"><svg class="i" aria-hidden="true"><use href="#icon-copy"/></svg> <span>Copy results</span></button></div>
   </div>
 </aside>
 
@@ -269,10 +300,18 @@ footer a:hover{color:var(--ink)}
 </main>
 </div>
 
-<footer>
-  <span>© 2026 Jalib Akther · <a href="https://github.com/jalibakthermk/HSPRevaluate">HSPRevaluate</a></span>
-  <span>Licensed under <a href="https://www.gnu.org/licenses/gpl-3.0.html">GPL-3.0</a> · Based on the <a href="https://github.com/HSPR-Software/HSPR">HSPR software</a> by TU Darmstadt (GPL-3.0)</span>
-</footer>
+</div>
+
+<div class="wrap foot">
+  <footer class="bk">
+    <span>HSPRevaluate</span>
+    <span>© 2026 Jalib Akther</span>
+    <span><svg class="i"><use href="#icon-pin"/></svg> Thrissur, India</span>
+    <span>Licensed under <a href="https://www.gnu.org/licenses/gpl-3.0.html">GPL-3.0</a></span>
+    <span>Based on the <a href="https://github.com/HSPR-Software/HSPR">HSPR software</a> by TU Darmstadt (GPL-3.0)</span>
+    <a href="https://jalibakthermk.github.io/">More lighting tools →</a>
+    <span class="disc">Results are engineering estimates; check them against measured data before relying on them.</span>
+  </footer>
 </div>
 
 <script>
