@@ -266,17 +266,18 @@
      atan(sep/2 / 1000 m) (left lamp at offset 0, right lamp shifted by the extra columns), the merged
      distribution is bilinearly resampled at 0.01° inside the window (nearest value beyond the last
      source column/row) and summed × tan(0.01°)². No cos(V) term, as in the reference. */
-  function interpWeights(src, lo, hi, fine) {
+  function interpWeights(src, lo, hi, fine, fw) {
     // weights per source index for Σ over fine points of linear interpolation on src[lo..hi-1]
     const W = new Float64Array(src.length);
     const a = lo, b = hi - 1;
     let k = a; // fine points ascend, so the bracket only moves forward
-    for (const t of fine) {
-      if (t <= src[a]) { W[a] += 1; continue; }
-      if (t >= src[b]) { W[b] += 1; continue; }
+    for (let q = 0; q < fine.length; q++) {
+      const t = fine[q], m = fw ? fw[q] : 1; // fw: optional weight per fine point (cos V)
+      if (t <= src[a]) { W[a] += m; continue; }
+      if (t >= src[b]) { W[b] += m; continue; }
       while (k < b - 1 && src[k + 1] < t) k++;
       const f = (t - src[k]) / (src[k + 1] - src[k]);
-      W[k] += 1 - f; W[k + 1] += f;
+      W[k] += (1 - f) * m; W[k + 1] += f * m;
     }
     return W;
   }
@@ -284,7 +285,9 @@
   const arangeLen = (start, stop, step) => Math.ceil((stop - start) / step);
   function fineAxis(lo, hi) { const st = (lo + 0.01) - lo, n = arangeLen(lo, hi + 0.01, 0.01), o = []; for (let i = 0; i < n; i++) o.push(around(lo + i * st, 2)); return o; }
   const Hgrid = Array.from({ length: NH }, (_, i) => H0 + i * DH), Vgrid = Array.from({ length: NV }, (_, i) => V0 + i * DV);
-  function fluxPair(gL, gR, sep, vb) {
+  /* Flux as the reference total_luminous_flux: 0.01° resample, every cell the flat solid angle tan(0.01°)².
+     cosV = true weights each cell by cos(V), the exact solid angle cos V·dH·dV (not the reference method). */
+  function fluxPair(gL, gR, sep, vb, cosV = false) {
     const s = Math.atan(0.5 * sep / 1000) * R2D;
     const start = Hgrid[0] - s, stop = Hgrid[NH - 1] + s + DH;
     const N2 = arangeLen(start, stop, DH), dd = (start + DH) - start;
@@ -292,15 +295,15 @@
     const kL = argNearest(lab, -45), kR = argNearest(lab, 45);
     const jL = argNearest(Vgrid, vb[0]), jU = argNearest(Vgrid, vb[1]);
     const fh = fineAxis(-45, 45), fv = fineAxis(vb[0], vb[1]);
-    const Wh = interpWeights(lab, kL, kR, fh), Wv = interpWeights(Vgrid, jL, jU, fv);
+    const Wh = interpWeights(lab, kL, kR, fh), Wv = interpWeights(Vgrid, jL, jU, fv, cosV ? fv.map(t => Math.cos(t * D2R)) : null);
     const sr = Math.tan(Math.abs(fh[0] - fh[1]) * D2R) * 25 * Math.tan(Math.abs(fv[0] - fv[1]) * D2R) * 25 / 625;
     let sum = 0;
     const add = (g, off) => { for (let j = jL; j < jU; j++) { const wv = Wv[j]; if (!wv) continue; let r = 0; const base = j * NH; for (let i = 0; i < NH; i++) { const w = Wh[i + off]; if (w) r += g.data[base + i] * w; } sum += r * wv; } };
     add(gL, 0); add(gR, N2 - NH);
     return sum * sr;
   }
-  function flux(pairs, vb) {
-    const F = around(pairs.reduce((s, p) => s + fluxPair(p.gL, p.gR, p.sep, vb), 0), 3);
+  function flux(pairs, vb, cosV = false) {
+    const F = around(pairs.reduce((s, p) => s + fluxPair(p.gL, p.gR, p.sep, vb, cosV), 0), 3);
     return { value: around(F, 2), pointsBasis: F };
   }
 
@@ -347,7 +350,7 @@
   const rankSingle = N => RANKS[Math.max(0, Math.min(5, Math.floor(N)))];
   const rankSystem = S => S < 10 ? RANKS[0] : S >= 50 ? RANKS[5] : RANKS[Math.floor(S / 10)];
 
-  /* LB: lb = {gL, gR, h, sep, lht}; opts.unmet = "reference" (default) | "zero" */
+  /* LB: lb = {gL, gR, h, sep, lht}; opts.unmet = "reference" (default) | "zero"; opts.flux = "reference" (default) | "cosV" */
   function assessLB(lb, opts = {}) {
     const lamps = lampsFrom(lb.gL, lb.gR, lb.h, lb.sep, lb.lht), v = {}, u = opts.unmet || "reference";
     v.A = zoneRange(lamps, [0, 1.5, 3], 0, 0, u);
@@ -357,7 +360,7 @@
     v.Dnear = zoneWidth(lamps, 1, [30, 40, 50], 0);
     v.Eoff = zoneWidth(lamps, -1, [10, 20], 0.25);
     v.Enear = zoneWidth(lamps, 1, [10, 20], 0.25);
-    v.Flux = flux([{ gL: lamps[0].g, gR: lamps[1].g, sep: lb.sep }], [-15, 5]);
+    v.Flux = flux([{ gL: lamps[0].g, gR: lamps[1].g, sep: lb.sep }], [-15, 5], opts.flux === "cosV");
     const g = lampGlare(lamps[0]) + lampGlare(lamps[1]);
     v.Glare = { value: around(g, 3), pointsBasis: g };
     const res = score(LB_CRIT, v, BENCH.LB);
@@ -365,7 +368,7 @@
     return res;
   }
   /* HB: hb = {gL, gR, h, sep, lht}; withLB = same shape for the passing beam that stays on (own position) */
-  function assessHB(hb, withLB) {
+  function assessHB(hb, withLB, opts = {}) {
     let lamps = lampsFrom(hb.gL, hb.gR, hb.h, hb.sep, hb.lht);
     const pairs = [{ gL: lamps[0].g, gR: lamps[1].g, sep: hb.sep }];
     if (withLB) {
@@ -381,7 +384,7 @@
     v.PE = pointRange(lamps, 0, h - 2);
     v.Eoff = zoneWidth(lamps, -1, [10, 20], 0.25);
     v.Enear = zoneWidth(lamps, 1, [10, 20], 0.25);
-    v.Flux = flux(pairs, [-5, 10]);
+    v.Flux = flux(pairs, [-5, 10], opts.flux === "cosV");
     const res = score(HB_CRIT, v, BENCH.HB);
     res.lamps = lamps;
     return res;

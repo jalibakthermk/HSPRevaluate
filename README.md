@@ -51,6 +51,7 @@ Each of these is flagged on the page when it applies.
 | Type C file | Read as an H/V grid (wrong) | Converted (polar axis auto-detected) |
 | Passing beam on during driving beam (GTB §6.2) | Not available | Optional, each beam at its own mounting |
 | Left-hand traffic | Not available | Mirrors the beams and swaps the lamps |
+| Flux solid angle | Every 0.01° cell counts tan²(0.01°) sr | Same by default; option to weight each cell by cos V (the exact solid angle, about 0.3–0.8 % less flux) |
 | Verbal rank near a boundary | Rounds to one decimal first, so e.g. 39.6 → Premium | GTB Table 18: 39.6 → Excellent |
 
 ## Validation
