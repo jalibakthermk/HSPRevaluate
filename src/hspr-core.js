@@ -254,10 +254,12 @@
     return { value: around(Math.abs(mean(vals)), 3), detail, warn: miss ? "3 lx not reached at one distance; counted as 0 m (the reference software would not finish)." : null };
   }
   // HB points: along the ray from the road origin towards (dx, dy, 100 m), from 800 m inward, E > 3 lx
-  function pointRange(lamps, dx, dy, lux = 3) {
-    const n = Math.sqrt(dx * dx + dy * dy + 100 * 100);
+  /* Driving-beam point: largest s (800 m down, 0.5 m steps) where E > 3 lx along a ray towards (dx, dy, 100 m).
+     Reference: the ray starts on the road at the vehicle centre (oy = 0). oy = h starts it at lamp height instead. */
+  function pointRange(lamps, dx, dy, lux = 3, oy = 0) {
+    const ry = dy - oy, n = Math.sqrt(dx * dx + ry * ry + 100 * 100);
     for (let s = 800; s > 0; s -= 0.5) {
-      if (Ev(lamps, s * dx / n, s * dy / n, s * 100 / n) > lux) return { value: s };
+      if (Ev(lamps, s * dx / n, oy + s * ry / n, s * 100 / n) > lux) return { value: s };
     }
     return { value: 0, warn: "3 lx not reached along this ray; counted as 0 m (the reference software stops with an error)." };
   }
@@ -376,12 +378,12 @@
       lamps = lamps.concat(lb);
       pairs.push({ gL: lb[0].g, gR: lb[1].g, sep: withLB.sep });
     }
-    const v = {}, h = hb.h;
-    v.PA = pointRange(lamps, 0, h);
-    v.PB = pointRange(lamps, -20, h);
-    v.PC = pointRange(lamps, 0, 9 + h);
-    v.PD = pointRange(lamps, 20, h);
-    v.PE = pointRange(lamps, 0, h - 2);
+    const v = {}, h = hb.h, oy = opts.rays === "lamp" ? h : 0;
+    v.PA = pointRange(lamps, 0, h, 3, oy);
+    v.PB = pointRange(lamps, -20, h, 3, oy);
+    v.PC = pointRange(lamps, 0, 9 + h, 3, oy);
+    v.PD = pointRange(lamps, 20, h, 3, oy);
+    v.PE = pointRange(lamps, 0, h - 2, 3, oy);
     v.Eoff = zoneWidth(lamps, -1, [10, 20], 0.25);
     v.Enear = zoneWidth(lamps, 1, [10, 20], 0.25);
     v.Flux = flux(pairs, [-5, 10], opts.flux === "cosV");

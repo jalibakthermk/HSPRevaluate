@@ -52,6 +52,7 @@ Each of these is flagged on the page when it applies.
 | Passing beam on during driving beam (GTB §6.2) | Not available | Optional, each beam at its own mounting |
 | Left-hand traffic | Not available | Mirrors the beams and swaps the lamps |
 | Flux solid angle | Every 0.01° cell counts tan²(0.01°) sr | Same by default; option to weight each cell by cos V (the exact solid angle, about 0.3–0.8 % less flux) |
+| Driving-beam points A–E | Ray starts on the road at the vehicle centre | Same by default; option to start it at lamp height (Point E then looks along a fixed 1.15° down and comes out shorter) |
 | Verbal rank near a boundary | Rounds to one decimal first, so e.g. 39.6 → Premium | GTB Table 18: 39.6 → Excellent |
 
 ## Validation

@@ -270,6 +270,8 @@ footer.bk a{color:var(--cds-link-primary)}
           <select id="unmet"><option value="reference" selected>Leave out (as .exe)</option><option value="zero">Count as 0 m</option></select></label>
         <label class="f">Flux solid angle
           <select id="fluxM"><option value="reference" selected>Flat tan² cell (as .exe)</option><option value="cosV">Exact, with cos V</option></select></label>
+        <label class="f">Driving-beam point rays
+          <select id="raysM"><option value="road" selected>From road at vehicle centre (as .exe)</option><option value="lamp">From lamp height</option></select></label>
       </div>
     </details>
   </div>
@@ -293,7 +295,7 @@ footer.bk a{color:var(--cds-link-primary)}
     <ul class="notes">
       <li>Lamps at ±separation/2, mounting height above the road. Vertical illuminance <code>E = I·cos/d²</code>, nearest point of a 0.05° grid (45°L–45°R, 15°D–15°U).</li>
       <li>Zones A/B: 1, 3, 5 lx on the road along 0, 1.5, 3 m R (B turned 5° R). Zone C: 250 mm, 3, 4.5, 6 m L. Zone D: 3 lx width on the road at 30/40/50 m. Zone E: 3 lx width at 250 mm, 10/20 m.</li>
-      <li>Points A–E: 3 lx along rays to (0, h), (−20, h), (0, h+9), (+20, h), (0, h−2) at 100 m.</li>
+      <li>Points A–E: 3 lx along rays to (0, h), (−20, h), (0, h+9), (+20, h), (0, h−2) at 100 m, starting on the road at the vehicle centre as in the reference, or at lamp height with the rays option.</li>
       <li>Glare: weighted flux into x −7.9…+1.3 m, 0.93…1.62 m at 50 m. Flux: LB 15°D–5°U, HB 5°D–10°U, both 45°L–45°R, summed for the lamp pair; each 0.01° cell counts tan²(0.01°) sr as in the reference, or cos V·dH·dV with the cos V option.</li>
       <li><code>P = (V − V₁)/(V₂ − V₁) + 1</code>; EP<sub>LB</sub> = 5.80N + 64.17, EP<sub>HB</sub> = 11.71N + 141.27, EP<sub>ADB</sub> = 10.87N + 94.13; score = 0.626·MEP − 36.42. Ranks per GTB Table 18.</li>
       <li>Calculation and rounding as the TU Darmstadt reference software. Differences: Type B converted, Type C supported, candela multiplier applied, unmet lines warned.</li>
@@ -573,10 +575,12 @@ footer.bk a{color:var(--cds-link-primary)}
     return { value: around(Math.abs(mean(vals)), 3), detail, warn: miss ? "3 lx not reached at one distance; counted as 0 m (the reference software would not finish)." : null };
   }
   // HB points: along the ray from the road origin towards (dx, dy, 100 m), from 800 m inward, E > 3 lx
-  function pointRange(lamps, dx, dy, lux = 3) {
-    const n = Math.sqrt(dx * dx + dy * dy + 100 * 100);
+  /* Driving-beam point: largest s (800 m down, 0.5 m steps) where E > 3 lx along a ray towards (dx, dy, 100 m).
+     Reference: the ray starts on the road at the vehicle centre (oy = 0). oy = h starts it at lamp height instead. */
+  function pointRange(lamps, dx, dy, lux = 3, oy = 0) {
+    const ry = dy - oy, n = Math.sqrt(dx * dx + ry * ry + 100 * 100);
     for (let s = 800; s > 0; s -= 0.5) {
-      if (Ev(lamps, s * dx / n, s * dy / n, s * 100 / n) > lux) return { value: s };
+      if (Ev(lamps, s * dx / n, oy + s * ry / n, s * 100 / n) > lux) return { value: s };
     }
     return { value: 0, warn: "3 lx not reached along this ray; counted as 0 m (the reference software stops with an error)." };
   }
@@ -695,12 +699,12 @@ footer.bk a{color:var(--cds-link-primary)}
       lamps = lamps.concat(lb);
       pairs.push({ gL: lb[0].g, gR: lb[1].g, sep: withLB.sep });
     }
-    const v = {}, h = hb.h;
-    v.PA = pointRange(lamps, 0, h);
-    v.PB = pointRange(lamps, -20, h);
-    v.PC = pointRange(lamps, 0, 9 + h);
-    v.PD = pointRange(lamps, 20, h);
-    v.PE = pointRange(lamps, 0, h - 2);
+    const v = {}, h = hb.h, oy = opts.rays === "lamp" ? h : 0;
+    v.PA = pointRange(lamps, 0, h, 3, oy);
+    v.PB = pointRange(lamps, -20, h, 3, oy);
+    v.PC = pointRange(lamps, 0, 9 + h, 3, oy);
+    v.PD = pointRange(lamps, 20, h, 3, oy);
+    v.PE = pointRange(lamps, 0, h - 2, 3, oy);
     v.Eoff = zoneWidth(lamps, -1, [10, 20], 0.25);
     v.Enear = zoneWidth(lamps, 1, [10, 20], 0.25);
     v.Flux = flux(pairs, [-5, 10], opts.flux === "cosV");
@@ -794,7 +798,7 @@ function updateSv(){
   $("svLB").textContent = `${nm("LB_L", "LB_R")} · ${f("hLB")} m · ${f("wLB")} m`;
   $("svHB").textContent = `${nm("HB_L", "HB_R")} · ${f("hHB")} m · ${f("wHB")} m`;
   $("svSys").textContent = $("mode").selectedOptions[0].text.split(" (")[0];
-  $("svOpt").textContent = $("traffic").value + ($("fluxM").value === "cosV" ? " · flux cos V" : "");
+  $("svOpt").textContent = $("traffic").value + ($("fluxM").value === "cosV" ? " · flux cos V" : "") + ($("raysM").value === "lamp" ? " · rays from lamp" : "");
 }
 
 // ---------- diagnostics ----------
@@ -853,11 +857,12 @@ function run(){
       }
       if (hbObj){
         const withLB = $("addLB").checked ? lbObj : null;
-        out.hb = H.assessHB(hbObj, withLB, { flux: $("fluxM").value }); out.hbLamps = out.hb.lamps; out.hbG = hbL;
+        out.hb = H.assessHB(hbObj, withLB, { flux: $("fluxM").value, rays: $("raysM").value }); out.hbLamps = out.hb.lamps; out.hbG = hbL;
         out.hb.warnings = out.hb.warnings.concat(notes([hbL, hbR]));
         if (!hbR && texts.HB_L) out.hb.warnings.push("Left-lamp file used for both lamps.");
         if ($("addLB").checked && !lbObj) out.hb.warnings.push("Passing beam on is ticked but no passing-beam file is loaded; rated alone.");
         if (withLB) out.hb.warnings.push("Rated with the passing beam on.");
+        if ($("raysM").value === "lamp") out.hb.warnings.push("Points A–E use rays from lamp height, not the reference geometry.");
         if ($("fluxM").value === "cosV") out.hb.warnings.push("Flux uses the exact solid angle (cos V), not the reference method.");
       }
       state.results = out;
